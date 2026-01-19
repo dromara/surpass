@@ -56,7 +56,7 @@
         :submitting="submitting"
         @update:visible="drawerVisible = $event"
         @update:form-data="updateFormData($event)"
-        @update:param-list="paramList.value = $event"
+        @update:param-list="paramList = $event"
         @close="handleDrawerClose"
         @submit="handleSubmit"
         @rule-config="openRuleConfig"
@@ -88,6 +88,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import * as publishApi from '@/api/api-service/publishApi.ts'
 import * as apiDefinitionApi from '@/api/api-service/apiDefinitionApi.ts'
 import * as apiVersionApi from '@/api/api-service/apiVersionApi.ts'
+import {apiParamTypeList} from '@/utils/enums/ApiContants.ts'
 
 // 导入拆分后的组件
 import PageHeader from './version/components/PageHeader.vue'
@@ -114,48 +115,7 @@ const versionList = ref([])
 const currentVersion = ref(null)
 const versionStatistics = ref(null)
 
-const paramInfoList = ref([
-  {
-    "value": "String",
-    "label": "字符串(String)"
-  },
-  {
-    "value": "Byte",
-    "label": "字节(Byte)"
-  },
-  {
-    "value": "Short",
-    "label": "短整型(Short)"
-  },
-  {
-    "value": "Integer",
-    "label": "整数(Integer)"
-  },
-  {
-    "value": "Long",
-    "label": "长整数(Long)"
-  },
-  {
-    "value": "Float",
-    "label": "单精度浮点(Float)"
-  },
-  {
-    "value": "Double",
-    "label": "双精度浮点(Double)"
-  },
-  {
-    "value": "Boolean",
-    "label": "布尔(Boolean)"
-  },
-  {
-    "value": "Array[Integer]",
-    "label": "整型数组(Array[Integer])"
-  },
-  {
-    "value": "Array[String]",
-    "label": "字符数组(Array[String])"
-  }
-])
+const paramInfoList = ref([...apiParamTypeList])
 
 const formData = reactive({
   id: null,

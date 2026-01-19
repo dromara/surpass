@@ -69,7 +69,7 @@
                 <el-tag type="primary" size="small">{{ row.name }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="type" label="类型" width="100" align="center">
+            <el-table-column prop="type" label="类型" align="center">
               <template #default="{ row }">
                 <el-tag :type="getParamTypeTagType(row.type)" size="small">
                   {{ getParamTypeObj(row.type).label }}

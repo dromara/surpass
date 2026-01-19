@@ -93,27 +93,45 @@
                   <el-select
                       v-model="param.type"
                       placeholder="类型"
-                      style="width: 100px"
+                      style="width: 250px"
                       disabled
                   >
-                    <el-option label="字符串" value="string"/>
-                    <el-option label="数字" value="number"/>
-                    <el-option label="布尔" value="boolean"/>
+                    <template v-for="(type, index) in paramInfoList" :key="index">
+                      <el-option :label="type.label" :value="type.value"></el-option>
+                    </template>
                   </el-select>
                   <el-input
+                      v-if="!param.type.startsWith('Array')"
                       v-model="param.value"
                       placeholder="参数值"
-                      style="flex: 1"
                       @input="validateParam(param)"
                       :class="{ 'invalid-param': param.error }"
                   />
+                  <div v-else class="array-params">
+                    <el-button icon="plus" type="primary" @click="param.value.push('')"></el-button>
+                    <template v-for="(item, index) in param.value" :key="index">
+                      <el-input
+                          v-model="param.value[index]"
+                          :placeholder="'参数['+index+']值'"
+                          style="width: 200px;"
+                          @input="validateParam(param)"
+                          :class="{ 'invalid-param': param.error }"
+                      >
+                        <template #append>
+                          <el-button slot="append" icon="Delete" size="small"
+                                     @click="param.value.splice(index, 1)"></el-button>
+                        </template>
+                      </el-input>
+                    </template>
+                    <el-button v-if="param.value.length > 0" icon="DeleteFilled" type="danger" size="small" @click="param.value.length = 0">清空
+                    </el-button>
+                  </div>
                   <div class="param-info">
                     <el-tooltip
-                        v-if="param.rules && Object.keys(param.rules).length > 0"
                         :content="getRuleDisplayText(param.rules)"
                         placement="top"
                     >
-                      <el-icon :color="param.required ? '#f56c6c' : '#909399'">
+                      <el-icon :color="param.rules.required ? '#f56c6c' : '#909399'">
                         <InfoFilled/>
                       </el-icon>
                     </el-tooltip>
@@ -206,6 +224,7 @@ import {ElMessage, ElNotification} from 'element-plus'
 import {gatewayApi} from '@/api/api-service/gatewayApi.ts'
 import * as apiVersionApi from '@/api/api-service/apiVersionApi.ts'
 import * as apiDefinitionApi from '@/api/api-service/apiDefinitionApi.ts'
+import {apiParamTypeList} from "@/utils/enums/ApiContants.ts";
 
 // 响应式数据
 const apiLoading = ref(false)
@@ -219,6 +238,7 @@ const responseData = ref(null)
 const executionTime = ref(0)
 
 const requestParams = ref([])
+const paramInfoList = ref([...apiParamTypeList])
 
 // 计算属性
 const hasValidationErrors = computed(() => {
@@ -280,25 +300,31 @@ const initRequestParams = (paramDefinition) => {
   try {
     const params = JSON.parse(paramDefinition)
     if (Array.isArray(params)) {
-      requestParams.value = params.map(param => ({
-        name: param.name || '',
-        value: '',
-        type: param.type || 'string',
-        required: param.required || false,
-        rules: param.rules || {},
-        error: false,
-        errorMessage: ''
-      }))
+      requestParams.value = params.map(param => {
+        const type = param.type || 'String'
+        return {
+          name: param.name || '',
+          value: type.startsWith('Array[') ? [] : '',
+          type: param.type || 'String',
+          required: param.required || false,
+          rules: param.rules || {},
+          error: false,
+          errorMessage: ''
+        }
+      })
     } else if (typeof params === 'object') {
-      requestParams.value = Object.keys(params).map(key => ({
-        name: key,
-        value: '',
-        type: params[key].type || 'string',
-        required: params[key].required || false,
-        rules: params[key].rules || {},
-        error: false,
-        errorMessage: ''
-      }))
+      requestParams.value = Object.keys(params).map(key => {
+        const type = param.type || 'String'
+        return {
+          name: key,
+          value: type.startsWith('Array[') ? [] : '',
+          type: params[key].type || 'String',
+          required: params[key].required || false,
+          rules: params[key].rules || {},
+          error: false,
+          errorMessage: ''
+        }
+      })
     }
   } catch (error) {
     console.error('解析参数定义失败:', error)
@@ -308,12 +334,14 @@ const initRequestParams = (paramDefinition) => {
 
 // 验证单个参数
 const validateParam = (param) => {
+  console.log('验证参数:', param)
+
   // 重置错误状态
   param.error = false
   param.errorMessage = ''
 
   // 必填验证
-  if (param.required && !param.value) {
+  if (param.rules.required && !param.value) {
     param.error = true
     param.errorMessage = '该参数为必填项'
     return
@@ -326,16 +354,17 @@ const validateParam = (param) => {
 
   // 类型验证和规则验证
   switch (param.type) {
-    case 'number':
+    case 'Integer':
+    case 'Long':
+    case 'Float':
+    case 'Double':
       // 数字类型验证
       if (isNaN(Number(param.value))) {
         param.error = true
         param.errorMessage = '请输入有效的数字'
         return
       }
-
       const numValue = Number(param.value)
-
       // 最小值验证
       if (param.rules.minValue !== undefined && numValue < param.rules.minValue) {
         param.error = true
@@ -349,9 +378,13 @@ const validateParam = (param) => {
         param.errorMessage = `数值不能大于 ${param.rules.maxValue}`
         return
       }
-      break
 
-    case 'string':
+      // 正则表达式验证
+      if (param.rules.pattern && !validatePattern(param)) {
+        return
+      }
+      break
+    case 'String':
       // 字符串长度验证
       if (param.rules.minLength !== undefined && param.value.length < param.rules.minLength) {
         param.error = true
@@ -366,29 +399,8 @@ const validateParam = (param) => {
       }
 
       // 正则表达式验证
-      if (param.rules.pattern) {
-        try {
-          const regExp = new RegExp(param.rules.pattern)
-          if (!regExp.test(param.value)) {
-            param.error = true
-            param.errorMessage = '输入格式不符合要求'
-            if (param.rules.format) {
-              const formatMessages = {
-                'email': '请输入有效的邮箱地址',
-                'phone': '请输入有效的手机号码',
-                'url': '请输入有效的URL',
-                'date': '请输入有效的日期格式',
-                'time': '请输入有效的时间格式',
-                'ipv4': '请输入有效的IPv4地址',
-                'ipv6': '请输入有效的IPv6地址'
-              }
-              param.errorMessage = formatMessages[param.rules.format] || '输入格式不符合要求'
-            }
-            return
-          }
-        } catch (e) {
-          console.error('正则表达式错误:', e)
-        }
+      if (param.rules.pattern && !validatePattern(param)) {
+        return
       }
 
       // 枚举值验证
@@ -400,8 +412,7 @@ const validateParam = (param) => {
         }
       }
       break
-
-    case 'boolean':
+    case 'Boolean':
       // 布尔类型验证
       const validBooleanValues = ['true', 'false', '1', '0']
       if (!validBooleanValues.includes(param.value.toLowerCase())) {
@@ -413,9 +424,36 @@ const validateParam = (param) => {
   }
 }
 
+const validatePattern = (param) => {
+  try {
+    const regExp = new RegExp(param.rules.pattern)
+    if (!regExp.test(param.value)) {
+      param.error = true
+      param.errorMessage = '输入格式不符合要求'
+      if (param.rules.format) {
+        const formatMessages = {
+          'email': '请输入有效的邮箱地址',
+          'phone': '请输入有效的手机号码',
+          'url': '请输入有效的URL',
+          'date': '请输入有效的日期格式',
+          'time': '请输入有效的时间格式',
+          'ipv4': '请输入有效的IPv4地址',
+          'ipv6': '请输入有效的IPv6地址'
+        }
+        param.errorMessage = formatMessages[param.rules.format] || '输入格式不符合要求'
+      }
+      return false
+    }
+  } catch (e) {
+    console.error('正则表达式错误:', e)
+  }
+  return true
+}
+
+
 // 获取规则显示文本
 const getRuleDisplayText = (rulesObj) => {
-  if (!rulesObj || Object.keys(rulesObj).length === 0) return ''
+  if (!rulesObj || Object.keys(rulesObj).length === 0) return '无要求'
 
   try {
     const descriptions = []
@@ -673,6 +711,15 @@ const getMethodTagType = (method) => {
 .param-item.param-error {
   background-color: #fef0f0;
   border: 1px solid #fde2e2;
+}
+
+.param-item .array-params {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
 }
 
 .param-info {

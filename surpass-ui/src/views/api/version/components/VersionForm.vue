@@ -17,7 +17,7 @@
           :rules="formRules"
           label-width="100px"
       >
-         <el-form-item label="版本号" prop="version">
+        <el-form-item label="版本号" prop="version">
           <el-input-number
               :model-value="formData.version"
               :min="1"
@@ -27,8 +27,8 @@
           />
         </el-form-item>
         <el-form-item label="操作类型" prop="supportsPaging">
-          <el-radio-group 
-              :model-value="formData.supportsPaging" 
+          <el-radio-group
+              :model-value="formData.supportsPaging"
               @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
               @change="handlePagingParams"
           >
@@ -84,15 +84,16 @@
               </el-button>
             </div>
             <el-table :data="paramList" border style="width: 100%; margin-top: 10px;">
-                <el-table-column prop="name" label="参数名" width="180">
+              <el-table-column prop="name" label="参数名" width="180">
                 <template #default="{ row, $index }">
                   <el-input
                       :model-value="row.name"
                       placeholder="参数名"
                       :readonly="row.readOnly"
-                      :class="{ 'read-only-param': row.readOnly }"
-                      @update:model-value="updateParam($index, 'name', $event)"
+                      :class="{ 'read-only-param': row.readOnly, 'input-error': !row.name }"
+                      @input="updateParam($index, 'name', $event)"
                   />
+                  <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
                 </template>
               </el-table-column>
               <el-table-column prop="type" label="类型" width="200">
@@ -122,7 +123,7 @@
                   </el-button>
                 </template>
               </el-table-column>
-               <el-table-column prop="description" label="描述">
+              <el-table-column prop="description" label="描述">
                 <template #default="{ row, $index }">
                   <el-input
                       :model-value="row.description"
@@ -186,8 +187,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, defineProps, defineEmits } from 'vue'
-import { ElMessage } from 'element-plus'
+import {ref, reactive, computed, defineProps, defineEmits} from 'vue'
+import {ElMessage} from 'element-plus'
+import {apiParamTypeList} from '@/utils/enums/ApiContants.ts'
 
 const props = defineProps({
   visible: {
@@ -215,52 +217,11 @@ const props = defineProps({
   },
   paramList: {
     type: Array,
-    default: () => []
+    default: () => [...apiParamTypeList]
   },
   paramInfoList: {
     type: Array,
-    default: () => [
-      {
-        "value": "String",
-        "label": "字符串(String)"
-      },
-      {
-        "value": "Byte",
-        "label": "字节(Byte)"
-      },
-      {
-        "value": "Short",
-        "label": "短整型(Short)"
-      },
-      {
-        "value": "Integer",
-        "label": "整数(Integer)"
-      },
-      {
-        "value": "Long",
-        "label": "长整数(Long)"
-      },
-      {
-        "value": "Float",
-        "label": "单精度浮点(Float)"
-      },
-      {
-        "value": "Double",
-        "label": "双精度浮点(Double)"
-      },
-      {
-        "value": "Boolean",
-        "label": "布尔(Boolean)"
-      },
-      {
-        "value": "Array[Integer]",
-        "label": "整型数组(Array[Integer])"
-      },
-      {
-        "value": "Array[String]",
-        "label": "字符数组(Array[String])"
-      }
-    ]
+    default: () => []
   },
   submitting: {
     type: Boolean,
@@ -546,7 +507,7 @@ const parseSqlParameters = (sqlTemplate) => {
 // 同步SQL模板参数到参数定义
 const syncSqlParamsToParamList = (sqlTemplate) => {
   const sql = sqlTemplate || props.formData.sqlTemplate
-  
+
   if (!sql) {
     // 如果SQL模板为空，清空参数列表（但保留只读参数）
     emit('update:paramList', props.paramList.filter(param => param.readOnly));
@@ -631,12 +592,12 @@ const handleDrawerClose = () => {
 
 const addParam = () => {
   const newParamList = [...props.paramList, {
-    name: 'param',
+    name: '',
     type: 'String',
     rules: {},
     description: ''
   }]
-  console.log("newParamList ",newParamList);
+  console.log("newParamList ", newParamList);
   emit('update:paramList', newParamList)
 }
 
@@ -648,13 +609,31 @@ const removeParam = (index) => {
   }
   const newParamList = [...props.paramList]
   newParamList.splice(index, 1)
-  console.log("newParamList ",newParamList);
+  console.log("newParamList ", newParamList);
   emit('update:paramList', newParamList)
 }
 
 const handleSubmit = async () => {
   try {
     await formRef.value.validate()
+    // 验证参数列表
+    const invalidParams = props.paramList.filter(param =>
+        !param.name?.trim() && !param.readOnly
+    )
+    if (invalidParams.length > 0) {
+      ElMessage.error('请填写所有参数名')
+      return
+    }
+
+    // 验证参数名重复性
+    const nonReadOnlyParams = props.paramList.filter(param => !param.readOnly);
+    const paramNames = nonReadOnlyParams.map(param => param.name?.trim());
+    const uniqueNames = new Set(paramNames);
+    if (uniqueNames.size !== nonReadOnlyParams.length) {
+      ElMessage.error('参数名不能重复');
+      return;
+    }
+
     emit('submit')
   } catch (error) {
     console.error('表单验证失败:', error)
@@ -663,13 +642,13 @@ const handleSubmit = async () => {
 
 const updateParam = (index, field, value) => {
   const newParamList = [...props.paramList]
-  newParamList[index] = { ...newParamList[index], [field]: value }
+  newParamList[index] = {...newParamList[index], [field]: value}
   emit('update:paramList', newParamList)
 }
 
 const handleSqlTemplateChange = (value) => {
   // 更新表单数据
-  emit('update:formData', { ...props.formData, sqlTemplate: value })
+  emit('update:formData', {...props.formData, sqlTemplate: value})
   // 同步SQL模板参数到参数定义列表
   syncSqlParamsToParamList(value)
 }
@@ -696,13 +675,17 @@ const handlePagingParams = () => {
   flex-direction: column;
 }
 
-.read-only-param input {
+.read-only-param :deep(.el-input__wrapper) {
   color: #909399 !important;
   background-color: #f5f7fa !important;
 }
 
-.read-only-param input:focus {
+.read-only-param :deep(input:focus) {
   border-color: #dcdfe6 !important;
+}
+
+.input-error :deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.5) inset;
 }
 
 .drawer-footer {
