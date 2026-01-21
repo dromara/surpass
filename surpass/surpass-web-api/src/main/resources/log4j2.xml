@@ -46,7 +46,7 @@
 
         <Logger level="INFO" name="org.apache.logging"></Logger>
         <Logger level="INFO" name="org.springframework"></Logger>
-        <Logger level="DEBUG" name="org.maxkey.surpass"></Logger>
+        <Logger level="DEBUG" name="org.dromara.surpass"></Logger>
         <Logger level="ERROR" name="com.alibaba.nacos"></Logger>
         <Logger level="ERROR" name="org.reflections.Reflections"></Logger>
         <Logger level="ERROR" name="RocketmqRemoting"></Logger>

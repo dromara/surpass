@@ -31,5 +31,9 @@ public interface AuthzResourceService  extends IJpaService<UserInfo> {
 	public Set<Resources> getResourcesBySubject(UserInfo user);
 
 	public List<Resources> queryResourcesByRoleId(QueryAppResourceDto dto);
+	
+	public Set<Resources> getAppResourcesBySubject(String userId,String appId);
+	
+	public List<Resources> queryAppResourcesByRoleId(QueryAppResourceDto dto)  ;
 
 }

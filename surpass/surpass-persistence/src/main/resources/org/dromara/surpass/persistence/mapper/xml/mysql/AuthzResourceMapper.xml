@@ -17,5 +17,21 @@
         </foreach>
         )
     </select>
+    
+    <select id="queryAppResourcesByRoleId" parameterType="QueryAppResourceDto" resultType="Resources">
+        SELECT distinct mr.*
+        FROM surpass_app_resources mr
+        join surpass_permission mp
+        on mr.id = mp.resource_id
+        where  mr.status ='1'
+		and mr.deleted = 'n'
+		and mr.app_id = #{appId}
+        and mp.status =1
+        and mp.role_id in (
+        <foreach collection="roleIds" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
 
 </mapper>

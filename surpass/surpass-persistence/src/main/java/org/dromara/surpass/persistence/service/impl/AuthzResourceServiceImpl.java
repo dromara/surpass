@@ -64,7 +64,7 @@ public class AuthzResourceServiceImpl  extends JpaServiceImpl<AuthzResourceMappe
 
     	List<CompletableFuture<List<Resources>>> futures = new ArrayList<>();
     	//根据用户读取应用资源
-    	QueryAppResourceDto dto = new QueryAppResourceDto(user.getId());
+    	QueryAppResourceDto dto = new QueryAppResourceDto(user.getId(),"");
 
     	//根据用户组获取应用资源
     	List<Roles> listRole = authzService.queryRolesByMembers(user);
@@ -103,6 +103,59 @@ public class AuthzResourceServiceImpl  extends JpaServiceImpl<AuthzResourceMappe
 	@Override
 	public List<Resources> queryResourcesByRoleId(QueryAppResourceDto dto) {
 		return getMapper().queryResourcesByRoleId(dto);
+	}
+	
+	
+	/**
+	 * 根据主体获取用户对应得应用资源清单
+	 * @param user
+	 * @return 资源清单列表
+	 */
+	@Override
+    public Set<Resources> getAppResourcesBySubject(String userId,String appId){
+    	logger.debug("user {} , app {}",userId);
+
+    	UserInfo user = new UserInfo();
+    	user.setId(userId);
+    	List<CompletableFuture<List<Resources>>> futures = new ArrayList<>();
+    	//根据用户读取应用资源
+    	QueryAppResourceDto dto = new QueryAppResourceDto(userId,appId);
+
+    	//根据用户组获取应用资源
+    	List<Roles> listRole = authzService.queryRolesByMembers(user);
+    	for(Roles r : listRole) {
+    		dto.getRoleIds().add(r.getId());
+    	}
+    	if (CollectionUtils.isNotEmpty(dto.getRoleIds())) {
+	    	CompletableFuture<List<Resources>> subjectRoleResourcesFuture = CompletableFuture.supplyAsync(() -> {
+	    		return queryAppResourcesByRoleId(dto);
+	    	});
+	    	futures.add(subjectRoleResourcesFuture);
+    	}
+
+        @SuppressWarnings("unchecked")
+		CompletableFuture<List<Resources>>[] completableFutures = futures.toArray(new CompletableFuture[futures.size()]);
+
+        //合并数据并去重
+        CompletableFuture<Set<Resources>> completableFuture =
+        		CompletableFuture.allOf(completableFutures).thenApply(result -> {
+        			Set<Resources> resourcesList = new HashSet<>();
+                	for (CompletableFuture<List<Resources>> future : completableFutures) {
+                		resourcesList.addAll(future.join());
+                	}
+                	return  resourcesList;
+                });
+
+    	return completableFuture.join();
+    }
+	/**
+	 * 根据appId和userId组列表获取资源清单
+	 * @param dto
+	 * @return
+	 */
+	@Override
+	public List<Resources> queryAppResourcesByRoleId(QueryAppResourceDto dto) {
+		return getMapper().queryAppResourcesByRoleId(dto);
 	}
 
 }

@@ -123,7 +123,11 @@ public class OpenApiPermissionAdapter  implements AsyncHandlerInterceptor  {
             	history.setClientId(token.getClientId());
                 AuthorizationUtils.setAuthentication(authenticationToken);
                 logger.debug("ApiRequestUri {} ",apiRequestUri);
-                isAccess = authzClientService.enforce(apiRequestUri,token.getClientId(),history);
+                if(apiRequestUri.getRequestPath().equals("/func/list")) {
+                	isAccess = true;
+                }else {
+                	isAccess = authzClientService.enforce(apiRequestUri,token.getClientId(),history);
+                }
             }
         }
         

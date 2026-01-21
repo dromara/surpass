@@ -26,15 +26,18 @@ import java.util.List;
 public class QueryAppResourceDto {
 
 	String userId;
+	
+	String appId;
 
 	List<String> orgIds;
 
 
 	List<String> roleIds;
 
-	public QueryAppResourceDto(String userId) {
+	public QueryAppResourceDto(String userId,String appId) {
 		super();
 		this.userId = userId;
+		this.appId = appId;
 		roleIds = new ArrayList<>();
 		orgIds = new ArrayList<>();
 	}

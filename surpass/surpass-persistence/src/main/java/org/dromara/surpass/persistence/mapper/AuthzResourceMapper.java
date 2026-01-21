@@ -31,4 +31,7 @@ import org.dromara.surpass.entity.permissions.Resources;
 public  interface AuthzResourceMapper extends IJpaMapper<UserInfo> {
 
 	public List<Resources> queryResourcesByRoleId(QueryAppResourceDto dto) ;
+	
+	public List<Resources> queryAppResourcesByRoleId(QueryAppResourceDto dto) ;
+	
 }

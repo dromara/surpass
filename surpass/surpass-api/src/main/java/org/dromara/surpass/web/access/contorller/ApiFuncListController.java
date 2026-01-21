@@ -23,17 +23,15 @@
 package org.dromara.surpass.web.access.contorller;
 
 import java.text.ParseException;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.dromara.surpass.authn.jwt.service.AuthTokenService;
 import org.dromara.surpass.authn.session.SessionManager;
-import org.dromara.surpass.authn.web.AuthorizationUtils;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.idm.UserInfo;
 import org.dromara.surpass.entity.permissions.Resources;
 import org.dromara.surpass.entity.vo.AppResourcesVo;
-import org.dromara.surpass.persistence.service.LoginService;
+import org.dromara.surpass.persistence.service.AuthzResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,8 +44,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Tag(name = "获取应用功能权限 API文档模块")
 @RestController
-@RequestMapping(value={"/open/func"})
-public class OpenFuncListController {
+@RequestMapping(value={"/api/func"})
+public class ApiFuncListController {
 
 	/**
 	 * 会话管理
@@ -61,19 +59,19 @@ public class OpenFuncListController {
 	AuthTokenService authTokenService ;
 
 	@Autowired
-    LoginService loginService;
+	AuthzResourceService authzResourceService;
 
-    @Operation(summary = "获取应用功能权限", description = "传递参数appId和token",method="GET")
+    @Operation(summary = "获取应用功能权限", description = "传递参数userId和appId",method="GET")
     @GetMapping(value = "/list")
-    public Message<AppResourcesVo> getFunctionsList(@RequestParam("appId") String appId,HttpServletRequest request) throws ParseException {
-    	AuthorizationUtils.authenticate(request, authTokenService, sessionManager);
-    	UserInfo user = AuthorizationUtils.getUserInfo();
-    	if(user != null) {
-	    	Set<Resources> functions  = loginService.getResourcesBySubject(user);
-	    	return new Message<>(new AppResourcesVo(functions));
-    	}else {
-    		return new Message<>(new AppResourcesVo(new HashSet<>()));
-    	}
+    public Message<AppResourcesVo> getFunctionsList(
+    		@RequestParam String userId,
+    		@RequestParam String appId,
+    		HttpServletRequest request) throws ParseException {
+    	UserInfo user = new UserInfo();
+    	user.setId(userId);
+    	Set<Resources> functions  = authzResourceService.getAppResourcesBySubject(userId,appId);
+    	return new Message<>(new AppResourcesVo(functions));
+  
     }
 
 }
