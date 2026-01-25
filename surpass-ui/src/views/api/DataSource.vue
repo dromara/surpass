@@ -42,7 +42,7 @@
         <el-table-column header-align="center" label="操作" width="120" fixed="right">
           <template #default="{ row }">
             <el-tooltip content="测试连接" placement="top">
-              <el-button link type="success" icon="CircleCheck"  @click="testConnection(row)"></el-button>
+              <el-button link type="warning" icon="CircleCheck"  @click="testConnection(row)"></el-button>
             </el-tooltip>
             <el-tooltip content="编辑" placement="top">
               <el-button link icon="Edit" type="primary" @click="editDataSource(row)"></el-button>
