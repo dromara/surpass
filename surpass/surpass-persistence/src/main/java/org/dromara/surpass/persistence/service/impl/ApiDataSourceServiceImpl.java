@@ -2,6 +2,7 @@ package org.dromara.surpass.persistence.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.dromara.mybatis.jpa.datasource.DataSourceSwitch;
 import org.dromara.mybatis.jpa.datasource.DynamicRoutingDataSource;
 import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.mybatis.jpa.service.impl.JpaServiceImpl;
@@ -13,11 +14,14 @@ import org.dromara.surpass.persistence.mapper.ApiDataSourceMapper;
 import org.dromara.surpass.persistence.service.ApiDataSourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Objects;
+
+import javax.sql.DataSource;
 
 /**
  * @description:
@@ -28,7 +32,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ApiDataSourceServiceImpl extends JpaServiceImpl<ApiDataSourceMapper, ApiDataSource> implements ApiDataSourceService {
-
     private static final Logger logger = LoggerFactory.getLogger(ApiDataSourceServiceImpl.class);
 
     private final DynamicRoutingDataSource dynamicRoutingDataSource;
@@ -83,7 +86,7 @@ public class ApiDataSourceServiceImpl extends JpaServiceImpl<ApiDataSourceMapper
         }
 
         // 4. 创建新的 DataSource 对象
-        javax.sql.DataSource newDs = buildDataSource(dataSource);
+        DataSource newDs = buildDataSource(dataSource);
         if (newDs == null) {
             return Message.failed("数据源连接失败，请检查配置");
         }
@@ -183,7 +186,7 @@ public class ApiDataSourceServiceImpl extends JpaServiceImpl<ApiDataSourceMapper
     private void addDynamicDataSource(ApiDataSource cfg) {
 
         // 1. 使用 Spring Boot 的 DataSourceBuilder 构建数据源
-        javax.sql.DataSource ds = org.springframework.boot.jdbc.DataSourceBuilder
+        DataSource ds = DataSourceBuilder
                 .create()
                 .driverClassName(cfg.getDriverClassName())
                 .url(cfg.getUrl())
@@ -201,9 +204,9 @@ public class ApiDataSourceServiceImpl extends JpaServiceImpl<ApiDataSourceMapper
     }
 
     @Override
-    public javax.sql.DataSource buildDataSource(ApiDataSource cfg) {
+    public DataSource buildDataSource(ApiDataSource cfg) {
         // 1. 使用 Spring Boot 的 DataSourceBuilder 构建数据源
-        javax.sql.DataSource ds = org.springframework.boot.jdbc.DataSourceBuilder
+        DataSource ds = DataSourceBuilder
                 .create()
                 .driverClassName(cfg.getDriverClassName())
                 .url(cfg.getUrl())
@@ -216,5 +219,24 @@ public class ApiDataSourceServiceImpl extends JpaServiceImpl<ApiDataSourceMapper
             return null;
         }
         return ds;
+    }
+    
+    public void switchDataSource(String dataSourceId) {
+        ApiDataSource dataSource = this.get(dataSourceId);
+        if (Objects.isNull(dataSource)) {
+            throw new BusinessException(50001, "数据源不存在");
+        }
+        String dataSourceName = dataSource.getName();
+        try {
+            DataSourceSwitch.change(dataSourceName);
+        } catch (Exception e) {
+            DataSource newDs = buildDataSource(dataSource);
+            boolean added = dynamicRoutingDataSource.addDataSource(dataSource.getName(), newDs);
+            if (!added) {
+                throw new BusinessException(50001, e.getMessage());
+            }
+            DataSourceSwitch.change(dataSourceName);
+        }
+        logger.debug("切换到数据源: {}", dataSourceName);
     }
 }
