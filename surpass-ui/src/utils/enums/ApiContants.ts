@@ -36,6 +36,10 @@ export const apiParamTypeList = [
         "label": "整型数组(Array[Integer])"
     },
     {
+        "value": "Array[Float]",
+        "label": "单精度浮点数组(Array[Float])"
+    },
+    {
         "value": "Array[String]",
         "label": "字符数组(Array[String])"
     }

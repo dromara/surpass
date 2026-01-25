@@ -9,7 +9,7 @@
       <!-- 操作栏 -->
       <div class="action-bar">
         <el-button type="primary" @click="showCreateDialog">
-          新增数据源
+          新增
         </el-button>
         <el-button @click="refreshList">
           刷新
@@ -18,6 +18,15 @@
 
       <!-- 数据源列表 -->
       <el-table :data="dataSourceList" border v-loading="loading" style="width: 100%">
+        <el-table-column header-align="center" label="数据库" width="100">
+          <template #default="{ row }">
+              <img v-if="row.driverClassName === 'com.mysql.cj.jdbc.Driver'" src="../../assets/db/mysql.png" style="width: 48px;"/>
+              <img v-if="row.driverClassName === 'org.mariadb.jdbc.Driver'" src="../../assets/db/mariadb.png" style="width: 48px;"/>
+              <img v-if="row.driverClassName === 'org.postgresql.Driver'" src="../../assets/db/postgresql.png" style="width: 48px;"/>
+              <img v-if="row.driverClassName === 'oracle.jdbc.OracleDriver'" src="../../assets/db/oracle.png" style="width: 48px;"/>
+              <img v-if="row.driverClassName === 'com.microsoft.sqlserver.jdbc.SQLServerDriver'" src="../../assets/db/ms_sql.png" style="width: 48px;"/>
+            </template>
+        </el-table-column>
         <el-table-column header-align="center" prop="name" label="名称"/>
         <el-table-column header-align="center" prop="driverClassName" label="驱动类型"/>
         <el-table-column header-align="center" prop="url" label="连接URL" show-overflow-tooltip/>
@@ -33,7 +42,7 @@
         <el-table-column header-align="center" label="操作" width="120" fixed="right">
           <template #default="{ row }">
             <el-tooltip content="测试连接" placement="top">
-              <el-button link><svg-icon icon-class="control" @click="testConnection(row)"></svg-icon></el-button>
+              <el-button link type="success" icon="CircleCheck"  @click="testConnection(row)"></el-button>
             </el-tooltip>
             <el-tooltip content="编辑" placement="top">
               <el-button link icon="Edit" type="primary" @click="editDataSource(row)"></el-button>
@@ -68,7 +77,7 @@
 
         <el-form-item label="驱动类型" prop="driverClassName">
           <el-select v-model="formData.driverClassName" placeholder="请选择驱动类型" style="width: 100%">
-            <el-option label="MySQL" value="com.mysql.cj.jdbc.Driver"/>
+            <el-option label="MySQL" value="com.mysql.cj.jdbc.Driver"></el-option>
             <el-option label="MariaDB" value="org.mariadb.jdbc.Driver"/>
             <el-option label="PostgreSQL" value="org.postgresql.Driver"/>
             <el-option label="Oracle" value="oracle.jdbc.OracleDriver"/>
@@ -124,6 +133,15 @@
 import {ref, reactive, onMounted, computed} from 'vue'
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus'
 import * as dataSourceApi from '@/api/api-service/dataSource.ts'
+import {
+  Check,
+  CircleCheck,
+  Delete,
+  Edit,
+  Message,
+  Search,
+  Star,
+} from '@element-plus/icons-vue'
 import SvgIcon from "@/components/SvgIcon/index.vue";
 
 const URL_PATTERNS = {
