@@ -66,6 +66,12 @@
           <div class="form-item-tip">限制每页最大记录数</div>
         </el-form-item>
         <el-form-item label="SQL模板" prop="sqlTemplate">
+           <el-button type="primary"  text bg> &lt;if&gt;</el-button>
+           <el-button type="primary"  text bg> &lt;foreach &gt;</el-button>
+           <el-button type="primary"  text bg> &lt;set&gt;</el-button>
+           <el-button type="primary"  text bg> &lt;choose&gt;</el-button>
+           <el-button type="primary"  text bg> &lt;trim&gt;</el-button>
+           <el-button type="warning" @click="formatSql">格式化</el-button>
           <code-mirror ref="sqlCodeEditor"
             :lang="sql()" 
             style="width:100%;height:60px;" 
@@ -206,6 +212,7 @@ import { json,jsonParseLinter  } from "@codemirror/lang-json";  //引入json语�
 import { xml } from "@codemirror/lang-xml";
 import { sql } from "@codemirror/lang-sql";
 import CodeMirror from 'vue-codemirror6';
+import { format } from "sql-formatter";
 
 const props = defineProps({
   visible: {
@@ -497,7 +504,7 @@ const parseSqlParameters = (sqlTemplate) => {
   if (!sqlTemplate) return [];
 
   // 使用正则表达式匹配 #{参数名} 格式的参数
-  const regex = /#\{([^}]+)\}/g;
+  const regex = /[#,$]\{([^}]+)\}/g;
   const matches = [];
   let match;
 
@@ -685,6 +692,13 @@ const openRuleConfig = (param) => {
 
 const handlePagingParams = () => {
   emit('paging-params-change')
+}
+
+const formatSql = (value) => {
+  console.log("sqlTemplate "+props.formData.sqlTemplate);
+  var tmpSql = props.formData.sqlTemplate.replace("#{","'#{").replace("}","}'")
+  var fSql = format(tmpSql).replace("'#{","#{").replace("}'","}");
+  emit('update:formData', {...props.formData, sqlTemplate: fSql})
 }
 
 </script>

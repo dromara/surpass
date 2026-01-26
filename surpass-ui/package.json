@@ -36,6 +36,7 @@
     "nprogress": "0.2.0",
     "or": "^0.2.0",
     "pinia": "2.1.7",
+    "sql-formatter": "^15.7.0",
     "surpass": "file:",
     "vue": "3.4.31",
     "vue-codemirror6": "^1.4.1",
