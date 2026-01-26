@@ -66,7 +66,15 @@
           <div class="form-item-tip">限制每页最大记录数</div>
         </el-form-item>
         <el-form-item label="SQL模板" prop="sqlTemplate">
-          <el-input
+          <code-mirror 
+            :lang="sql()" 
+            style="width:100%;height:60px;" 
+            basic 
+            wrap
+            v-model="formData.sqlTemplate" 
+            @update:model-value="handleSqlTemplateChange($event)"
+            placeholder="请输入SQL模板，支持命名参数如 #{name}"/>
+          <el-input v-if="false"
               :model-value="formData.sqlTemplate"
               type="textarea"
               :rows="4"
@@ -150,13 +158,14 @@
         </el-form-item>
 
         <el-form-item label="响应模板" prop="responseTemplate">
-          <el-input
+          <el-input v-if="false"
               :model-value="formData.responseTemplate"
               type="textarea"
               :rows="4"
               placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"
               @update:model-value="$emit('update:formData', { ...props.formData, responseTemplate: $event })"
           />
+          <code-mirror :lang="json()"  style="width:100%;height:60px;" basic  v-model="formData.responseTemplate" placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"/>
           <div class="template-tips">
             <p><strong>模板提示：</strong></p>
             <p>• 使用 <code>#{data}</code> 占位符代表查询结果数据（必须包含）</p>
@@ -187,9 +196,15 @@
 </template>
 
 <script setup>
-import {ref, reactive, computed, defineProps, defineEmits} from 'vue'
+import {ref, reactive, computed, defineProps, defineEmits,defineComponent } from 'vue'
 import {ElMessage} from 'element-plus'
 import {apiParamTypeList} from '@/utils/enums/ApiContants.ts'
+import { EditorView, lineNumbers } from "@codemirror/view";
+import { EditorState } from "@codemirror/state";
+import { json,jsonParseLinter  } from "@codemirror/lang-json";  //引入json语言支持
+import { xml } from "@codemirror/lang-xml";
+import { sql } from "@codemirror/lang-sql";
+import CodeMirror from 'vue-codemirror6';
 
 const props = defineProps({
   visible: {
@@ -646,7 +661,8 @@ const updateParam = (index, field, value) => {
   emit('update:paramList', newParamList)
 }
 
-const handleSqlTemplateChange = (value) => {
+const handleSqlTemplateChange = (value, viewUpdate) => {
+  console.log("handleSqlTemplateChange"+value);
   // 更新表单数据
   emit('update:formData', {...props.formData, sqlTemplate: value})
   // 同步SQL模板参数到参数定义列表
@@ -665,6 +681,7 @@ const openRuleConfig = (param) => {
 const handlePagingParams = () => {
   emit('paging-params-change')
 }
+
 </script>
 
 <style scoped lang="scss">
