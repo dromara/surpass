@@ -1,6 +1,8 @@
 package org.dromara.surpass.entity.app.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import org.dromara.mybatis.jpa.entity.JpaPage;
 
 /**
@@ -10,6 +12,7 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class AppResourcesPageDto extends JpaPage {
     private String name;
 

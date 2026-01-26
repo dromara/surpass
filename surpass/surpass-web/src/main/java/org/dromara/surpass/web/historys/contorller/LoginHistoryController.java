@@ -21,7 +21,6 @@
 
 
 package org.dromara.surpass.web.historys.contorller;
-import org.dromara.mybatis.jpa.entity.JpaPage;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
 import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.surpass.authn.annotation.CurrentUser;
@@ -33,7 +32,6 @@ import org.dromara.surpass.persistence.service.HistoryLoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;

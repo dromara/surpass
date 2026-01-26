@@ -41,11 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Dashboard Controller
@@ -58,9 +54,7 @@ import java.util.Random;
 public class DashboardController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DashboardController.class);
-	private static final Random random = new Random();
-	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-	
+
 	@Autowired
 	private DashboardStatisticsService dashboardStatisticsService;
 

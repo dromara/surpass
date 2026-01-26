@@ -23,6 +23,7 @@ package org.dromara.surpass.entity.config;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.dromara.mybatis.jpa.entity.JpaEntity;
@@ -34,10 +35,12 @@ import java.io.Serializable;
  * @author Crystal.Sea
  *
  */
-@NoArgsConstructor
+
 @Data
-@Table(name = "surpass_config_login_policy")
 @Entity
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+@Table(name = "surpass_config_login_policy")
 public class ConfigLoginPolicy extends JpaEntity implements Serializable {
 	@Serial
 	private static final long serialVersionUID = 2563009899218736769L;

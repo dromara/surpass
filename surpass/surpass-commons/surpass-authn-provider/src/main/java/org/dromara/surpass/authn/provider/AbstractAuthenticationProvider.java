@@ -24,7 +24,6 @@ package org.dromara.surpass.authn.provider;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.dromara.surpass.authn.LoginCredential;
 import org.dromara.surpass.authn.SignedPrincipal;
 import org.dromara.surpass.authn.jwt.service.AuthTokenService;

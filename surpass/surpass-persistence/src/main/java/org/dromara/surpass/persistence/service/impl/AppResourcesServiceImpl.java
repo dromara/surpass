@@ -23,7 +23,6 @@ import org.dromara.surpass.enums.ResourceClassify;
 import org.dromara.surpass.exception.BusinessException;
 import org.dromara.surpass.persistence.mapper.AppMapper;
 import org.dromara.surpass.persistence.mapper.AppResourcesMapper;
-import org.dromara.surpass.persistence.mapper.RoleAppResourcesPermissionMapper;
 import org.dromara.surpass.persistence.service.AppResourcesService;
 import org.dromara.surpass.persistence.service.ClientPermissionService;
 import org.dromara.surpass.persistence.service.RoleAppResourcesPermissionService;

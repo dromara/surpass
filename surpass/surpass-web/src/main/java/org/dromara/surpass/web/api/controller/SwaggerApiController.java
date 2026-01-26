@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.surpass.entity.api.ApiVersion;
-import org.dromara.surpass.entity.app.App;
 import org.dromara.surpass.entity.app.AppResources;
 import org.dromara.surpass.persistence.service.ApiVersionService;
 import org.dromara.surpass.persistence.service.AppResourcesService;

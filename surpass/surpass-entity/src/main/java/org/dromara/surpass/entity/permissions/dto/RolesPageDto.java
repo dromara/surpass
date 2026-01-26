@@ -31,10 +31,5 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @EqualsAndHashCode(callSuper=false)
 public class RolesPageDto extends JpaPage {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 7889062435661661753L;
-
     private String roleName;
 }

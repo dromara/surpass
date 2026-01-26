@@ -26,8 +26,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import jakarta.persistence.*;
-import jdk.jfr.Enabled;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dromara.mybatis.jpa.entity.JpaEntity;
 
@@ -38,9 +38,10 @@ import org.dromara.mybatis.jpa.entity.JpaEntity;
  */
 
 @Data
-@NoArgsConstructor
-@Table(name = "surpass_history_system_logs")
 @Entity
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+@Table(name = "surpass_history_system_logs")
 public class HistorySystemLogs extends JpaEntity implements Serializable {
 
     @Serial

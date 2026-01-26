@@ -31,11 +31,6 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @Data
 public class RoleMemberPageDto extends JpaPage {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -6954485176508112100L;
-
     private String username;
 
     private String memberId;

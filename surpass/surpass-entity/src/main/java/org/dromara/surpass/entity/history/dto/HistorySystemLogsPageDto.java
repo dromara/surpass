@@ -26,9 +26,4 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
  * @time: 2024/11/28 16:39
  */
 public class HistorySystemLogsPageDto extends JpaPage {
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7352135366177890258L;
 }

@@ -27,7 +27,6 @@ import java.util.List;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
 import org.dromara.mybatis.jpa.service.impl.JpaServiceImpl;
 import org.dromara.surpass.entity.Message;
-import org.dromara.surpass.entity.idm.UserInfo;
 import org.dromara.surpass.entity.permissions.Resources;
 import org.dromara.surpass.entity.permissions.dto.ResourcesPageDto;
 import org.dromara.surpass.persistence.mapper.ResourcesMapper;

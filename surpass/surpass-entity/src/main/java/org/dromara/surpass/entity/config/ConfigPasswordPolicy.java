@@ -24,6 +24,7 @@ package org.dromara.surpass.entity.config;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dromara.mybatis.jpa.entity.JpaEntity;
 
@@ -37,9 +38,10 @@ import java.util.List;
  */
 
 @Data
-@NoArgsConstructor
-@Table(name = "surpass_config_password_policy")
 @Entity
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+@Table(name = "surpass_config_password_policy")
 public class ConfigPasswordPolicy extends JpaEntity implements Serializable {
 
     @Serial

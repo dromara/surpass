@@ -30,8 +30,5 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
-public class HistoryLoginPageDto extends JpaPage {/**
-	 *
-	 */
-	private static final long serialVersionUID = 7324849662736107103L;
+public class HistoryLoginPageDto extends JpaPage {
 }

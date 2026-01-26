@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.Date;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.dromara.mybatis.jpa.entity.JpaEntity;
@@ -40,9 +41,10 @@ import org.dromara.surpass.entity.client.ClientUserAgent;
  */
 
 @Data
-@NoArgsConstructor
-@Table(name = "surpass_history_login")
 @Entity
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+@Table(name = "surpass_history_login")
 public class HistoryLogin extends JpaEntity implements Serializable{
 	@Serial
 	private static final long serialVersionUID = -1321470643357719383L;

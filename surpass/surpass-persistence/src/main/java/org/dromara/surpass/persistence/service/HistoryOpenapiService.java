@@ -21,8 +21,6 @@ package org.dromara.surpass.persistence.service;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
 import org.dromara.mybatis.jpa.service.IJpaService;
 import org.dromara.surpass.entity.Message;
-import org.dromara.surpass.entity.app.AppResources;
-import org.dromara.surpass.entity.app.dto.AppResourcesPageDto;
 import org.dromara.surpass.entity.history.HistoryOpenapi;
 import org.dromara.surpass.entity.history.dto.HistoryOpenapiPageDto;
 

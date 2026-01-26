@@ -1,15 +1,9 @@
 package org.dromara.surpass.entity.app.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-import org.dromara.mybatis.jpa.annotations.SoftDelete;
 import org.dromara.surpass.validate.AddGroup;
 import org.dromara.surpass.validate.EditGroup;
-
-import java.util.Date;
 
 /**
  * @description:

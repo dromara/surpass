@@ -7,7 +7,6 @@ import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.api.ApiVersion;
 import org.dromara.surpass.enums.ApiVersionStatus;
 import org.dromara.surpass.persistence.service.ApiVersionService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

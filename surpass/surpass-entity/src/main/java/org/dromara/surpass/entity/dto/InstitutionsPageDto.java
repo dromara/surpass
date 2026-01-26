@@ -30,11 +30,6 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class InstitutionsPageDto extends JpaPage {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -5337421047169976733L;
-
 	private String instName;
 
 	private Integer instType;

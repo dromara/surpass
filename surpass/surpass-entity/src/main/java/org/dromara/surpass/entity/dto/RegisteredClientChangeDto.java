@@ -1,13 +1,8 @@
 package org.dromara.surpass.entity.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.util.Date;
 
 import org.dromara.surpass.validate.AddGroup;
 import org.dromara.surpass.validate.EditGroup;

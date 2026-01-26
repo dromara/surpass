@@ -18,7 +18,6 @@
 
 package org.dromara.surpass.authn.web.interceptor;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -28,7 +27,6 @@ import org.dromara.surpass.authn.jwt.service.AuthTokenService;
 import org.dromara.surpass.authn.session.SessionManager;
 import org.dromara.surpass.authn.web.AuthorizationUtils;
 import org.dromara.surpass.configuration.ApplicationConfig;
-import org.dromara.surpass.security.TokenStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

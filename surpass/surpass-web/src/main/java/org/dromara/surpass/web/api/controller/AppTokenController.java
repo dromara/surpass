@@ -1,24 +1,15 @@
 package org.dromara.surpass.web.api.controller;
 
-import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
-import org.dromara.surpass.authn.annotation.CurrentUser;
-import org.dromara.surpass.constants.ConstsAct;
-import org.dromara.surpass.constants.ConstsActResult;
-import org.dromara.surpass.constants.ConstsEntryType;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.app.App;
 import org.dromara.surpass.entity.app.dto.AppChangeDto;
 import org.dromara.surpass.entity.app.dto.AppPageDto;
-import org.dromara.surpass.entity.idm.Organizations;
-import org.dromara.surpass.entity.idm.UserInfo;
 import org.dromara.surpass.persistence.service.AppService;
-import org.dromara.surpass.security.TokenStore;
 import org.dromara.surpass.validate.AddGroup;
 import org.dromara.surpass.validate.EditGroup;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

@@ -32,12 +32,7 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @EqualsAndHashCode(callSuper=false)
 public class ResourcesPageDto extends JpaPage {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -5804284703086424324L;
-
-	String id;
+    String id;
 
     String appId;
 

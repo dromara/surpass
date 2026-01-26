@@ -1,13 +1,10 @@
 package org.dromara.surpass.web.historys.contorller;
 
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
-import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.surpass.authn.annotation.CurrentUser;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.history.HistoryOpenapi;
-import org.dromara.surpass.entity.history.HistorySystemLogs;
 import org.dromara.surpass.entity.history.dto.HistoryOpenapiPageDto;
-import org.dromara.surpass.entity.history.dto.HistorySystemLogsPageDto;
 import org.dromara.surpass.entity.idm.UserInfo;
 import org.dromara.surpass.persistence.service.HistoryOpenapiService;
 import org.slf4j.Logger;

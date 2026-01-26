@@ -32,11 +32,6 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @EqualsAndHashCode(callSuper=false)
 public class UserInfoPageDto extends JpaPage {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 4849764781931650281L;
-
     String username;
 
     String employeeNumber;

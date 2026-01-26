@@ -31,11 +31,6 @@ import org.dromara.mybatis.jpa.entity.JpaPage;
 @EqualsAndHashCode(callSuper=false)
 public class OrgPageDto extends JpaPage {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 4488795848556645003L;
-
     private String orgName;
 
     private String parentId;

@@ -28,7 +28,6 @@ import org.dromara.surpass.persistence.service.ApiDataSourceService;
 import org.dromara.surpass.persistence.service.AppResourcesService;
 import org.dromara.surpass.persistence.service.AppService;
 import org.dromara.surpass.persistence.service.DashboardStatisticsService;
-import org.dromara.surpass.persistence.service.HistoryOpenapiService;
 import org.dromara.surpass.persistence.service.RegisteredClientService;
 import org.dromara.surpass.persistence.service.RolesService;
 import org.dromara.surpass.persistence.service.UserInfoService;

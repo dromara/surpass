@@ -8,7 +8,6 @@ import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.RegisteredClient;
 import org.dromara.surpass.entity.dto.RegisteredClientChangeDto;
 import org.dromara.surpass.entity.dto.RegisteredClientPageDto;
-import org.dromara.surpass.entity.dto.RegisteredClientPermissionDto;
 import org.dromara.surpass.persistence.service.ClientPermissionService;
 import org.dromara.surpass.persistence.service.RegisteredClientService;
 import org.dromara.surpass.validate.AddGroup;

@@ -2,11 +2,9 @@ package org.dromara.surpass.web.app.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import org.dromara.surpass.entity.ClientPermission;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.RoleAppResourcesPermission;
 import org.dromara.surpass.entity.app.dto.AppResourcesPageDto;
-import org.dromara.surpass.entity.app.dto.ClientAuthzDto;
 import org.dromara.surpass.entity.app.dto.RoleAppResourcesAuthzDto;
 import org.dromara.surpass.persistence.service.RoleAppResourcesPermissionService;
 import org.springdoc.core.annotations.ParameterObject;

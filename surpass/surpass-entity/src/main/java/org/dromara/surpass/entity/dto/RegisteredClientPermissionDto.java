@@ -1,6 +1,5 @@
 package org.dromara.surpass.entity.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 

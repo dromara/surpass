@@ -44,7 +44,6 @@ import org.dromara.surpass.entity.idm.Organizations;
 import org.dromara.surpass.entity.idm.UserInfo;
 import org.dromara.surpass.persistence.mapper.OrganizationsMapper;
 import org.dromara.surpass.persistence.service.OrganizationsExcelService;
-import org.dromara.surpass.persistence.service.OrganizationsService;
 import org.dromara.surpass.util.DateUtils;
 import org.dromara.surpass.util.ExcelUtils;
 import org.slf4j.Logger;

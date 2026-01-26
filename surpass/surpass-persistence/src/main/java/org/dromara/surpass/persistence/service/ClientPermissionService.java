@@ -1,7 +1,6 @@
 package org.dromara.surpass.persistence.service;
 
 import org.dromara.mybatis.jpa.service.IJpaService;
-import org.dromara.surpass.entity.ApiRequestUri;
 import org.dromara.surpass.entity.ClientPermission;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.app.AppResources;

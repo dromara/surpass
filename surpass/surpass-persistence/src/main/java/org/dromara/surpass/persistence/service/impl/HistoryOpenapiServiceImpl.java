@@ -27,7 +27,6 @@ import java.util.Date;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
 import org.dromara.mybatis.jpa.service.impl.JpaServiceImpl;
 import org.dromara.surpass.entity.Message;
-import org.dromara.surpass.entity.app.AppResources;
 import org.dromara.surpass.entity.history.HistoryOpenapi;
 import org.dromara.surpass.entity.history.dto.HistoryOpenapiPageDto;
 import org.dromara.surpass.persistence.mapper.HistoryOpenapiMapper;
@@ -35,7 +34,6 @@ import org.dromara.surpass.persistence.service.HistoryOpenapiService;
 import org.dromara.surpass.web.WebContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
