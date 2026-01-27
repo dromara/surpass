@@ -42,7 +42,7 @@
     "src/**/*.vue",
     "shims-vue.d.ts",
     "node_modules/unplugin-auto-import/auto-imports.d.ts"
-  ],
+, "src/api/formatter.js"  ],
   "exclude": [
     "node_modules"
   ]

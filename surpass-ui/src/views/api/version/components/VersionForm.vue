@@ -67,11 +67,14 @@
         </el-form-item>
         <el-form-item label="SQL模板" prop="sqlTemplate">
            <el-button type="warning" @click="formatSql">格式化</el-button>
-           <el-button type="primary"  text bg> &lt;if&gt;</el-button>
-           <el-button type="primary"  text bg> &lt;foreach &gt;</el-button>
-           <el-button type="primary"  text bg> &lt;set&gt;</el-button>
-           <el-button type="primary"  text bg> &lt;choose&gt;</el-button>
-           <el-button type="primary"  text bg> &lt;trim&gt;</el-button>
+           
+           <el-button type="primary"  text bg @click="tagSqlIf"> &lt;if&gt;</el-button>
+           <el-button type="primary"  text bg @click="tagSqlForeach"> &lt;foreach&gt;</el-button>
+           <el-button type="primary"  text bg @click="tagSqlChoose"> &lt;choose&gt;</el-button>
+           <el-button type="primary"  text bg @click="tagSqlTrim"> &lt;trim&gt;</el-button>
+           <el-button type="primary"  text bg @click="tagSqlWhere"> &lt;where&gt;</el-button>
+           <el-button type="primary"  text bg @click="tagSqlSet"> &lt;set&gt;</el-button>
+           
           <code-mirror ref="sqlCodeEditor"
             :lang="sql()" 
             style="width:100%;min-height:60px;" 
@@ -212,7 +215,7 @@ import { json,jsonParseLinter  } from "@codemirror/lang-json";  //引入json语�
 import { xml } from "@codemirror/lang-xml";
 import { sql } from "@codemirror/lang-sql";
 import CodeMirror from 'vue-codemirror6';
-import { format } from "sql-formatter";
+import { format }  from '@/api/formatter.js'
 
 const props = defineProps({
   visible: {
@@ -694,10 +697,50 @@ const handlePagingParams = () => {
   emit('paging-params-change')
 }
 
+const tagSqlIf = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <if test="property != null"> </if>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+
+const tagSqlForeach = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <foreach item="item" index="index" collection="list" open="(" separator="," close=")" nullable="true"> #{item} </foreach>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+
+const tagSqlSet = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <set> </set>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+
+const tagSqlChoose = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <choose> <when test="property != null"> </when> <otherwise> </otherwise> </choose>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+const tagSqlTrim = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <trim prefix="WHERE | SET " prefixOverrides="AND |OR "> </trim>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+
+const tagSqlWhere = (value) => {
+  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var tagedSql = preSql + ' <where> </where>' + suffixSql;
+  emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
+}
+
+
 const formatSql = (value) => {
-  console.log("sqlTemplate "+props.formData.sqlTemplate);
-  var tmpSql = props.formData.sqlTemplate.replaceAll("#{","'#{").replaceAll("${","'${").replaceAll("}","}'")
-  var fSql = format(tmpSql).replaceAll("'#{","#{").replaceAll("'${","${").replaceAll("}'","}");
+  var fSql = format(props.formData.sqlTemplate);
   console.log("format sqlTemplate "+fSql);
   emit('update:formData', {...props.formData, sqlTemplate: fSql})
 }
