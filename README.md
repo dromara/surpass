@@ -1,8 +1,8 @@
 <p align="center">
-        <img src="https://img.shields.io/github/v/release/tomsun28/surpass" />
+        <img src="https://img.shields.io/github/v/release/dromara/surpass" />
         <img src="https://img.shields.io/badge/JDK-v17%2B-brightgreen" />
         <img src="https://img.shields.io/badge/MySQL-8.4.2%2B-brightgreen" />
-        <img src="https://img.shields.io/github/license/tomsun28/surpass" />
+        <img src="https://img.shields.io/github/license/dromara/surpass" />
 </p>
 
 
@@ -10,15 +10,16 @@
 
 ```Surpass```API权限开放平台，零代码开发，SQL定义RESTful OpenAPI接口；面向```REST API```资源无状态认证和调用，实现企业统一权限管理
 
+- 提供基于Mybatis SQL方式的OpenAPI功能定义，只需编写 SQL，零代码开发 API 服务
 - 实现企业内部系统统一权限管理，提供标准应用资源读取接口，轻松掌控企业内部复杂的权限
 - 基于```角色访问控制RBAC```，提供对应用系统的权限控制，经典RBAC权限管理:```用户-角色-应用-资源 ```
-- 提供基于Mybatis SQL方式的OpenAPI功能定义，只需编写 SQL，零代码开发 API 服务
 - 提供页面可配置式的,动态的 ```API``` 权限安全管理支持  
+- 基于客户端Token的认证机制，保护OpenAPI安全
 - 数据传输动态秘钥加密,```JWT```过期刷新,用户操作监控等加固应用安全  
 - 全方位日志记录，包括API地址、归属地、调用权限控制，加强API调用审计
 - 根据OpenAPI配置自动生成Swagger文档
 
-[gitee]( https://gitee.com/tomsun28/bootshiro) | [github]( https://github.com/tomsun28/surpass)
+[gitee]( https://gitee.com/dromara/bootshiro) | [github]( https://github.com/dromara/surpass)
 
 
 官方微信: 
