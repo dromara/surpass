@@ -19,7 +19,7 @@
 - 全方位日志记录，包括API地址、归属地、调用权限控制，加强API调用审计
 - 根据OpenAPI配置自动生成Swagger文档
 
-[gitee]( https://gitee.com/dromara/bootshiro) | [github]( https://github.com/dromara/surpass)
+[gitee]( https://gitee.com/dromara/surpass) | [github]( https://github.com/dromara/surpass)
 
 
 官方微信: 
