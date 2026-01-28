@@ -65,7 +65,7 @@
                          :show-overflow-tooltip="true"></el-table-column>
         <el-table-column prop="clientName" label="客户端名称" align="center" min-width="120"
                          :show-overflow-tooltip="true"></el-table-column>
-        
+
         <el-table-column prop="clientType" label="客户端类型" align="center" min-width="100">
           <template #default="scope">
             <dict-tag-number :options="client_type" :value="scope.row.clientType"/>
@@ -88,6 +88,9 @@
         </el-table-column>
         <el-table-column :label="$t('jbx.text.action')" align="center" width="170" fixed="right">
           <template #default="scope">
+            <el-tooltip content="我的权限">
+              <el-button link icon="SetUp" @click="handlePermission(scope.row)"></el-button>
+            </el-tooltip>
             <el-tooltip content="编辑">
               <el-button link icon="Edit" @click="handleUpdate(scope.row)"></el-button>
             </el-tooltip>
@@ -128,6 +131,7 @@ import {set2String} from "@/utils"
 import clientEdit from "./edit.vue";
 import clientAppAuth from "./appAuth.vue";
 import DictTagNumber from "@/components/DIctTagNumber/index.vue";
+import {useRouter} from "vue-router";
 
 const {t} = useI18n()
 
@@ -135,6 +139,8 @@ const {proxy} = getCurrentInstance()!;
 
 const {client_type}
     = proxy?.useDict("client_type");
+
+const router: any = useRouter(); // 获取路由实例
 
 const data: any = reactive({
   queryParams: {
@@ -148,6 +154,7 @@ const {queryParams} = toRefs(data);
 const clientList: any = ref<any>([]);
 const open: any = ref(false);
 const authOpen: any = ref(false);
+const permissionOpen: any = ref(false);
 const loading: any = ref(true);
 const title: any = ref("");
 const id: any = ref(undefined);
@@ -218,6 +225,15 @@ function handleAppAuth(row: any): any {
   authClientId.value = row.id;
   authClientName.value = row.clientName;
   authOpen.value = true;
+}
+
+const handlePermission = (row: any): any => {
+  // 确保 router 实例存在并且是有效的
+  if (router && typeof router.push === 'function') {
+    router.push(`/app/client/permission?clientId=${row.clientId}&clientName=${row.clientName}&id=${row.id}`);
+  } else {
+    console.error('Router instance is not available.');
+  }
 }
 
 /** 多选操作*/

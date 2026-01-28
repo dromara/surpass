@@ -81,6 +81,11 @@ public class AppResourcesController {
        return Message.ok(appResourcesService.tree(dto));
     }
 
+    @GetMapping(value={"/tree/client"})
+    public Message<Map<String, List<MapTree<String>>>> treeByClient(@ParameterObject AppResourcesPageDto dto) {
+        return Message.ok(appResourcesService.treeByClient(dto));
+    }
+
     @PostMapping("/clientAuthz")
     public Message<String> clientAuthz(@Validated @RequestBody ClientAuthzDto dto) {
         return clientPermissionService.saveClientAppRelation(dto);

@@ -119,6 +119,35 @@ public class AppResourcesServiceImpl extends JpaServiceImpl<AppResourcesMapper, 
     }
 
     @Override
+    public Map<String, List<MapTree<String>>> treeByClient(AppResourcesPageDto dto) {
+
+        // 1️⃣ 查询资源ID（顺便去重）
+        var resourceIds = registeredClientRelationService.query(
+                        new LambdaQuery<ClientPermission>()
+                                .eq(ClientPermission::getClientId, dto.getClientId())
+                ).stream()
+                .map(ClientPermission::getResourceId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        // 没资源直接返回空结果，避免 IN ()
+        if (resourceIds.isEmpty()) {
+            return Map.of("resources", List.of());
+        }
+
+        // 2️⃣ 查询资源
+        var list = super.query(
+                new LambdaQuery<AppResources>()
+                        .in(AppResources::getId, resourceIds)
+        );
+
+        // 3️⃣ 构建树并返回（不可变 Map）
+        return Map.of("resources", buildTree(list));
+    }
+
+
+    @Override
     public AppResources findByPathAndMethod(String path, String method, String contextPath) {
         App app = appMapper.findByContextPath(contextPath);
 
@@ -166,7 +195,8 @@ public class AppResourcesServiceImpl extends JpaServiceImpl<AppResourcesMapper, 
                         r.getSortIndex()
                 ).setExtra(Map.of(
                         "classify", r.getClassify(),
-                        "resStyle", r.getResStyle() == null ? "" : r.getResStyle()
+                        "resStyle", r.getResStyle() == null ? "" : r.getResStyle(),
+                        "appId", r.getAppId()
                 )))
                 .toList();
 
