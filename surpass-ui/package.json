@@ -33,6 +33,7 @@
     "js-cookie": "3.0.5",
     "jsencrypt": "3.3.2",
     "lucide-vue-next": "^0.475.0",
+    "node-sql-parser": "^5.3.13",
     "nprogress": "0.2.0",
     "or": "^0.2.0",
     "pinia": "2.1.7",

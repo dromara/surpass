@@ -47,6 +47,9 @@ public class ApiVersion extends JpaEntity implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String responseTemplate;
 
+    @Column(columnDefinition = "TEXT")
+    private String responseDefinition;
+
     @NotNull(message = "状态不能为空")
     @Column(nullable = false)
     private Integer status = 0;
@@ -58,7 +61,7 @@ public class ApiVersion extends JpaEntity implements Serializable {
      * 是否分页
      */
     @Column(length = 1)
-    @NotNull(message = "是否支持分页不能为空")
+    @NotNull(message = "操作类型不能为空")
     private String supportsPaging;
 
     /**

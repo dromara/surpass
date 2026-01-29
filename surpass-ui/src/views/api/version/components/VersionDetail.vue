@@ -123,12 +123,49 @@
           <el-empty description="无响应模板" :image-size="80"/>
         </div>
       </el-card>
+
+      <!-- 响应参数定义卡片 -->
+      <el-card class="response-param-card" shadow="never">
+        <template #header>
+          <div class="card-header">
+            <span>响应参数定义</span>
+            <el-tag v-if="parsedResponses && parsedResponses.length > 0" type="info" size="small">
+              {{ parsedResponses.length }} 个参数
+            </el-tag>
+          </div>
+        </template>
+        <div v-if="parsedResponses && parsedResponses.length > 0">
+          <el-table :data="parsedResponses" border size="small" class="param-table" height="auto">
+            <el-table-column prop="name" label="参数名" width="120" align="center">
+              <template #default="{ row }">
+                <el-tag type="success" size="small">{{ row.name }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="type" label="类型" align="center">
+              <template #default="{ row }">
+                <el-tag :type="getParamTypeTagType(row.type)" size="small">
+                  {{ getParamTypeObj(row.type).label }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="description" label="描述">
+              <template #default="{ row }">
+                {{ row.description || '-' }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div v-else class="empty-state">
+          <el-empty description="无响应参数定义" :image-size="80"/>
+        </div>
+      </el-card>
+
     </div>
   </el-dialog>
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import {ref, computed, defineProps, defineEmits} from 'vue'
 
 const props = defineProps({
   visible: {
@@ -206,6 +243,19 @@ const parsedParams = computed(() => {
     return JSON.parse(props.currentVersion.paramDefinition)
   } catch (error) {
     console.error('解析参数定义失败:', error)
+    return []
+  }
+})
+
+const parsedResponses = computed(() => {
+  if (!props.currentVersion || !props.currentVersion.responseDefinition) {
+    return []
+  }
+
+  try {
+    return JSON.parse(props.currentVersion.responseDefinition)
+  } catch (error) {
+    console.error('解析响应参数定义失败:', error)
     return []
   }
 })
@@ -371,10 +421,6 @@ const formatResponseTemplate = (template) => {
 .param-table .el-table th {
   background-color: #f8f9fa;
   font-weight: 600;
-}
-
-.empty-state {
-  padding: 40px 0;
 }
 
 .response-card .template-tips {

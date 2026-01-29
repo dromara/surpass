@@ -52,11 +52,13 @@
         :is-edit="isEdit"
         :form-data="formData"
         :param-list="paramList"
+        :response-list="responseList"
         :param-info-list="paramInfoList"
         :submitting="submitting"
         @update:visible="drawerVisible = $event"
         @update:form-data="updateFormData($event)"
         @update:param-list="paramList = $event"
+        @update:response-list="responseList = $event"
         @close="handleDrawerClose"
         @submit="handleSubmit"
         @rule-config="openRuleConfig"
@@ -124,6 +126,7 @@ const formData = reactive({
   sqlTemplate: '',
   paramDefinition: '',
   responseTemplate: '',
+  responseDefinition: '',
   description: '',
   supportsPaging: '1',
   pageSizeMax: 20,
@@ -132,6 +135,8 @@ const formData = reactive({
 
 // 参数列表
 const paramList = ref([])
+// 响应参数列表
+const responseList = ref([])
 
 // 规则配置相关
 const ruleConfigDialog = ref(false)
@@ -236,6 +241,18 @@ const editVersion = async (row) => {
     paramList.value = []
   }
 
+  // 解析响应参数定义
+  if (row.responseDefinition) {
+    try {
+      responseList.value = Array.isArray(row.responseDefinition) ? row.responseDefinition : JSON.parse(row.responseDefinition)
+    } catch (error) {
+      console.error('解析响应参数定义失败:', error)
+      responseList.value = []
+    }
+  } else {
+    responseList.value = []
+  }
+
   // 处理分页参数
   handlePagingParams()
 
@@ -255,12 +272,14 @@ const resetForm = () => {
     sqlTemplate: '',
     paramDefinition: '',
     responseTemplate: '',
+    responseDefinition: '',
     description: '',
     supportsPaging: '0',
     pageSizeMax: 20,
     rateLimit: 0
   })
   paramList.value = []
+  responseList.value = []
 }
 
 const handleDrawerClose = () => {
@@ -279,6 +298,11 @@ const handleSubmit = async () => {
     const validParams = paramList.value.filter(param => param.name.trim() !== '')
     // 将 paramDefinition 转换为 JSON 字符串后提交
     formData.paramDefinition = validParams.length > 0 ? JSON.stringify(validParams, null, 2) : ''
+
+    // 将响应参数列表转换为JSON字符串
+    const validResponses = responseList.value.filter(response => response.name.trim() !== '')
+    // 将 responseDefinition 转换为 JSON 字符串后提交
+    formData.responseDefinition = validResponses.length > 0 ? JSON.stringify(validResponses, null, 2) : ''
 
     if (isEdit.value) {
       await apiVersionApi.update(formData.id, formData)
@@ -442,6 +466,7 @@ const createNextVersion = async () => {
     formData.sqlTemplate = publishedVersion.sqlTemplate
     formData.paramDefinition = publishedVersion.paramDefinition
     formData.responseTemplate = publishedVersion.responseTemplate
+    formData.responseDefinition = publishedVersion.responseDefinition
     formData.description = `基于版本 v${publishedVersion.version} 迭代`
     formData.pageSizeMax = publishedVersion.pageSizeMax
     formData.supportsPaging = publishedVersion.supportsPaging
@@ -454,6 +479,16 @@ const createNextVersion = async () => {
       } catch (error) {
         console.error('解析参数定义失败:', error)
         paramList.value = []
+      }
+    }
+
+    // 解析响应参数定义
+    if (publishedVersion.responseDefinition) {
+      try {
+        responseList.value = Array.isArray(publishedVersion.responseDefinition) ? publishedVersion.responseDefinition : JSON.parse(publishedVersion.responseDefinition)
+      } catch (error) {
+        console.error('解析响应参数定义失败:', error)
+        responseList.value = []
       }
     }
 

@@ -5,6 +5,8 @@
       direction="rtl"
       size="60%"
       :before-close="handleDrawerClose"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
       @update:model-value="$emit('update:visible', $event)"
   >
     <template #header>
@@ -17,185 +19,244 @@
           :rules="formRules"
           label-width="100px"
       >
-        <el-form-item label="版本号" prop="version">
-          <el-input-number
-              :model-value="formData.version"
-              :min="1"
-              :max="999"
-              placeholder="请输入版本号"
-              @update:model-value="$emit('update:formData', { ...props.formData, version: $event })"
-          />
-        </el-form-item>
-        <el-form-item label="操作类型" prop="supportsPaging">
-          <el-radio-group
-              :model-value="formData.supportsPaging"
-              @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
-              @change="handlePagingParams"
-          >
-            <el-radio-button label="1">
-              分页
-            </el-radio-button>
-            <el-radio-button label="2">
-              列表
-            </el-radio-button>
-            <el-radio-button label="3">
-              单记录
-            </el-radio-button>
-            <el-radio-button label="4">
-              增加
-            </el-radio-button>
-            <el-radio-button label="5">
-              修改
-            </el-radio-button>
-            <el-radio-button label="6">
-              删除
-            </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
+        <el-tabs v-model="activeTab" class="form-tabs">
+          <el-tab-pane label="基础配置" name="basic">
+            <div class="tab-content">
+              <el-form-item label="版本号" prop="version">
+                <el-input-number
+                    :model-value="formData.version"
+                    :min="1"
+                    :max="999"
+                    placeholder="请输入版本号"
+                    @update:model-value="$emit('update:formData', { ...props.formData, version: $event })"
+                />
+              </el-form-item>
+              <el-form-item label="操作类型" prop="supportsPaging">
+                <el-radio-group
+                    :model-value="formData.supportsPaging"
+                    @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
+                    @change="handlePagingParams"
+                >
+                  <el-radio-button label="1">
+                    分页
+                  </el-radio-button>
+                  <el-radio-button label="2">
+                    列表
+                  </el-radio-button>
+                  <el-radio-button label="3">
+                    单记录
+                  </el-radio-button>
+                  <el-radio-button label="4">
+                    增加
+                  </el-radio-button>
+                  <el-radio-button label="5">
+                    修改
+                  </el-radio-button>
+                  <el-radio-button label="6">
+                    删除
+                  </el-radio-button>
+                </el-radio-group>
+              </el-form-item>
 
-        <el-form-item label="分页大小" prop="pageSizeMax" v-if="formData.supportsPaging === '1'">
-          <el-input-number
-              style="width: 200px;"
-              :model-value="formData.pageSizeMax"
-              :min="1"
-              :max="9999"
-              placeholder=""
-              controls-position="right"
-              @update:model-value="$emit('update:formData', { ...props.formData, pageSizeMax: $event })"
-          />
-          <div class="form-item-tip">限制每页最大记录数</div>
-        </el-form-item>
-        <el-form-item label="SQL模板" prop="sqlTemplate">
-           <el-button type="warning" @click="formatSql">格式化</el-button>
-           
-           <el-button type="primary"  text bg @click="tagSqlIf"> &lt;if&gt;</el-button>
-           <el-button type="primary"  text bg @click="tagSqlForeach"> &lt;foreach&gt;</el-button>
-           <el-button type="primary"  text bg @click="tagSqlChoose"> &lt;choose&gt;</el-button>
-           <el-button type="primary"  text bg @click="tagSqlTrim"> &lt;trim&gt;</el-button>
-           <el-button type="primary"  text bg @click="tagSqlWhere"> &lt;where&gt;</el-button>
-           <el-button type="primary"  text bg @click="tagSqlSet"> &lt;set&gt;</el-button>
-           
-          <code-mirror ref="sqlCodeEditor"
-            :lang="sql()" 
-            style="width:100%;min-height:60px;" 
-            class="template-code"
-            basic 
-            wrap
-            v-model="formData.sqlTemplate" 
-            @update:model-value="handleSqlTemplateChange"
-            placeholder="请输入SQL模板，支持命名参数如 #{name}"/>
-          <el-input v-if="false"
-              :model-value="formData.sqlTemplate"
-              type="textarea"
-              :rows="4"
-              placeholder="请输入SQL模板，支持命名参数如 #{name}"
-              @update:model-value="handleSqlTemplateChange($event)"
-          />
-        </el-form-item>
+              <el-form-item label="分页大小" prop="pageSizeMax" v-if="formData.supportsPaging === '1'">
+                <el-input-number
+                    style="width: 200px;"
+                    :model-value="formData.pageSizeMax"
+                    :min="1"
+                    :max="9999"
+                    placeholder=""
+                    controls-position="right"
+                    @update:model-value="$emit('update:formData', { ...props.formData, pageSizeMax: $event })"
+                />
+                <div class="form-item-tip">限制每页最大记录数</div>
+              </el-form-item>
 
-        <el-form-item label="参数定义" prop="paramDefinition">
-          <div class="param-definition-container">
-            <div class="param-header">
-              <span></span>
-              <el-button type="primary" size="small" @click="addParam">
-                添加参数
-              </el-button>
+              <el-form-item label="描述" prop="description">
+                <el-input
+                    :model-value="formData.description"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="请输入版本描述"
+                    @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
+                />
+              </el-form-item>
             </div>
-            <el-table :data="paramList" border style="width: 100%; margin-top: 10px;">
-              <el-table-column prop="name" label="参数名" width="180">
-                <template #default="{ row, $index }">
-                  <el-input
-                      :model-value="row.name"
-                      placeholder="参数名"
-                      :readonly="row.readOnly"
-                      :class="{ 'read-only-param': row.readOnly, 'input-error': !row.name }"
-                      @input="updateParam($index, 'name', $event)"
-                  />
-                  <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
-                </template>
-              </el-table-column>
-              <el-table-column prop="type" label="类型" width="200">
-                <template #default="{ row, $index }">
-                  <el-select
-                      :model-value="row.type"
-                      placeholder="选择类型"
-                      :disabled="row.readOnly"
-                      @update:model-value="updateParam($index, 'type', $event)"
-                  >
-                    <template v-for="(type, index) in paramInfoList" :key="index">
-                      <el-option :label="type.label" :value="type.value"></el-option>
-                    </template>
-                  </el-select>
-                </template>
-              </el-table-column>
-              <el-table-column prop="rules" label="输入规则">
-                <template #default="{ row }">
-                  <el-button
-                      link
-                      type="primary"
-                      @click="openRuleConfig(row)"
-                      :title="JSON.stringify(row.rules, null, 2)"
-                      :disabled="row.readOnly"
-                  >
-                    {{ getRuleDisplayText(row.rules) || '配置规则' }}
-                  </el-button>
-                </template>
-              </el-table-column>
-              <el-table-column prop="description" label="描述">
-                <template #default="{ row, $index }">
-                  <el-input
-                      :model-value="row.description"
-                      placeholder="参数描述"
-                      :readonly="row.readOnly"
-                      @update:model-value="updateParam($index, 'description', $event)"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="60" align="center">
-                <template #default="{ $index }">
-                  <el-button
-                      icon="Delete"
-                      link
-                      type="danger"
-                      size="small"
-                      @click="removeParam($index)"
-                      :disabled="paramList[$index]?.readOnly"
-                  ></el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </el-form-item>
+          </el-tab-pane>
 
-        <el-form-item label="响应模板" prop="responseTemplate">
-          <el-input v-if="false"
-              :model-value="formData.responseTemplate"
-              type="textarea"
-              :rows="4"
-              placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"
-              @update:model-value="$emit('update:formData', { ...props.formData, responseTemplate: $event })"
-          />
-          <code-mirror :lang="json()"  style="width:100%;min-height:60px;" class="template-code" basic  v-model="formData.responseTemplate" placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"/>
-          <div class="template-tips">
-            <p><strong>模板提示：</strong></p>
-            <p>• 使用 <code>#{data}</code> 占位符代表查询结果数据（必须包含）</p>
-            <p>• 示例：<code>{"code": 0, "message": "success", "data": #{data}}</code></p>
-            <p>• 支持JSON格式，系统会自动将查询结果替换到 #{data} 位置</p>
-          </div>
-        </el-form-item>
+          <el-tab-pane label="请求参数" name="request">
+            <div class="tab-content">
+              <el-form-item label="SQL模板" prop="sqlTemplate">
+                <el-button type="warning" @click="formatSql">格式化</el-button>
 
-        <el-form-item label="描述" prop="description">
-          <el-input
-              :model-value="formData.description"
-              type="textarea"
-              :rows="2"
-              placeholder="请输入版本描述"
-              @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
-          />
-        </el-form-item>
+                <el-button type="primary" text bg @click="tagSqlIf"> &lt;if&gt;</el-button>
+                <el-button type="primary" text bg @click="tagSqlForeach"> &lt;foreach&gt;</el-button>
+                <el-button type="primary" text bg @click="tagSqlChoose"> &lt;choose&gt;</el-button>
+                <el-button type="primary" text bg @click="tagSqlTrim"> &lt;trim&gt;</el-button>
+                <el-button type="primary" text bg @click="tagSqlWhere"> &lt;where&gt;</el-button>
+                <el-button type="primary" text bg @click="tagSqlSet"> &lt;set&gt;</el-button>
+
+                <code-mirror ref="sqlCodeEditor"
+                             :lang="sql()"
+                             style="width:100%;min-height:60px;"
+                             class="template-code"
+                             basic
+                             wrap
+                             v-model="formData.sqlTemplate"
+                             @update:model-value="handleSqlTemplateChange"
+                             placeholder="请输入SQL模板，支持命名参数如 #{name}"/>
+              </el-form-item>
+              <el-form-item label="请求参数定义" prop="paramDefinition">
+                <div class="param-definition-container">
+                  <div class="param-header">
+                    <span></span>
+                    <el-button type="primary" size="small" @click="addParam">
+                      添加参数
+                    </el-button>
+                  </div>
+                  <el-table :data="paramList" border style="width: 100%; margin-top: 10px;">
+                    <el-table-column prop="name" label="参数名" width="180">
+                      <template #default="{ row, $index }">
+                        <el-input
+                            :model-value="row.name"
+                            placeholder="参数名"
+                            :readonly="row.readOnly"
+                            :class="{ 'read-only-param': row.readOnly, 'input-error': !row.name }"
+                            @input="updateParam($index, 'name', $event)"
+                        />
+                        <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="type" label="类型" width="200">
+                      <template #default="{ row, $index }">
+                        <el-select
+                            :model-value="row.type"
+                            placeholder="选择类型"
+                            :disabled="row.readOnly"
+                            @update:model-value="updateParam($index, 'type', $event)"
+                        >
+                          <template v-for="(type, index) in paramInfoList" :key="index">
+                            <el-option :label="type.label" :value="type.value"></el-option>
+                          </template>
+                        </el-select>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="rules" label="输入规则">
+                      <template #default="{ row }">
+                        <el-button
+                            link
+                            type="primary"
+                            @click="openRuleConfig(row)"
+                            :title="JSON.stringify(row.rules, null, 2)"
+                            :disabled="row.readOnly"
+                        >
+                          {{ getRuleDisplayText(row.rules) || '配置规则' }}
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="description" label="描述">
+                      <template #default="{ row, $index }">
+                        <el-input
+                            :model-value="row.description"
+                            placeholder="参数描述"
+                            :readonly="row.readOnly"
+                            @update:model-value="updateParam($index, 'description', $event)"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="60" align="center">
+                      <template #default="{ $index }">
+                        <el-button
+                            icon="Delete"
+                            link
+                            type="danger"
+                            size="small"
+                            @click="removeParam($index)"
+                            :disabled="paramList[$index]?.readOnly"
+                        ></el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-form-item>
+            </div>
+          </el-tab-pane>
+
+          <el-tab-pane label="响应参数" name="response">
+            <div class="tab-content">
+              <el-form-item label="响应模板" prop="responseTemplate">
+                <code-mirror :lang="json()" style="width:100%;min-height:60px;" class="template-code" basic
+                             v-model="formData.responseTemplate"
+                             placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"/>
+                <div class="template-tips">
+                  <p><strong>模板提示：</strong></p>
+                  <p>• 使用 <code>#{data}</code> 占位符代表查询结果数据（必须包含）</p>
+                  <p>• 示例：<code>{"code": 0, "message": "success", "data": #{data}}</code></p>
+                  <p>• 支持JSON格式，系统会自动将查询结果替换到 #{data} 位置</p>
+                </div>
+              </el-form-item>
+              <el-form-item label="响应参数定义" prop="responseDefinition">
+                <div class="param-definition-container">
+                  <div class="param-header">
+                    <span></span>
+                    <el-button type="primary" size="small" @click="addResponse">
+                      添加响应参数
+                    </el-button>
+                  </div>
+                  <el-table :data="responseList" border style="width: 100%; margin-top: 10px;">
+                    <el-table-column prop="name" label="参数名" width="180">
+                      <template #default="{ row, $index }">
+                        <el-input
+                            :model-value="row.name"
+                            placeholder="响应参数名"
+                            :class="{ 'input-error': !row.name }"
+                            @input="updateResponse($index, 'name', $event)"
+                        />
+                        <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="type" label="类型" width="200">
+                      <template #default="{ row, $index }">
+                        <el-select
+                            :model-value="row.type"
+                            placeholder="选择类型"
+                            @update:model-value="updateResponse($index, 'type', $event)"
+                        >
+                          <template v-for="(type, index) in paramInfoList" :key="index">
+                            <el-option :label="type.label" :value="type.value"></el-option>
+                          </template>
+                        </el-select>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="description" label="描述">
+                      <template #default="{ row, $index }">
+                        <el-input
+                            :model-value="row.description"
+                            placeholder="参数描述"
+                            @update:model-value="updateResponse($index, 'description', $event)"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="60" align="center">
+                      <template #default="{ $index }">
+                        <el-button
+                            icon="Delete"
+                            link
+                            type="danger"
+                            size="small"
+                            @click="removeResponse($index)"
+                        ></el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-form-item>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-form>
 
       <div class="drawer-footer">
+        <el-button @click="handleTest">测试</el-button>
         <el-button @click="handleDrawerClose">取消</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="submitting">
           保存
@@ -206,17 +267,17 @@
 </template>
 
 <script setup>
-import {ref, reactive, computed, defineProps, defineEmits,defineComponent } from 'vue'
+import {ref, computed, defineProps, defineEmits} from 'vue'
 import {ElMessage} from 'element-plus'
 import {apiParamTypeList} from '@/utils/enums/ApiContants.ts'
-import { EditorView, lineNumbers } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
-import { json,jsonParseLinter  } from "@codemirror/lang-json";  //引入json语言支持
-import { xml } from "@codemirror/lang-xml";
-import { sql } from "@codemirror/lang-sql";
+import {json} from "@codemirror/lang-json";  //引入json语言支持
+import {sql} from "@codemirror/lang-sql";
 import CodeMirror from 'vue-codemirror6';
-import { format }  from '@/api/formatter.js'
+import {format} from '@/api/formatter.js'
+import {Parser} from 'node-sql-parser';
+import {parseSqlParameters, checkSqlStructure, syncResponseParams, normalizeMybatisSql} from "@/utils/SqlUtil.ts"
 
+const parser = new Parser();
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -243,23 +304,28 @@ const props = defineProps({
   },
   paramList: {
     type: Array,
-    default: () => [...apiParamTypeList]
+    default: () => []
+  },
+  responseList: {
+    type: Array,
+    default: () => []
   },
   paramInfoList: {
     type: Array,
-    default: () => []
+    default: () => [...apiParamTypeList]
   },
   submitting: {
     type: Boolean,
     default: false
   },
-  codeMirrorCursor : 0
+  codeMirrorCursor: 0
 })
 
 const emit = defineEmits([
   'update:visible',
   'update:formData',
   'update:paramList',
+  'update:responseList',
   'close',
   'submit',
   'rule-config',
@@ -268,6 +334,7 @@ const emit = defineEmits([
 
 const formRef = ref()
 const sqlCodeEditor = ref();
+const activeTab = ref('basic')
 const dialogTitle = computed(() => props.isEdit ? '编辑版本' : '新增版本')
 const drawerVisible = computed({
   get() {
@@ -328,41 +395,6 @@ const validateSqlTemplate = (rule, value, callback) => {
     }
   }
 
-  // ========== 新增：简单 SQL 语句结构合法性验证 ==========
-  let isValidStructure = true
-  let errorMsg = ''
-
-  if (trimmedSql.startsWith('SELECT')) {
-    // 简单判断：SELECT ... FROM ...
-    if (!/^\s*SELECT\s+.*\s+FROM\s+/i.test(value)) {
-      isValidStructure = false
-      errorMsg = 'SELECT语句缺少FROM子句'
-    }
-  } else if (trimmedSql.startsWith('INSERT')) {
-    // INSERT INTO table (...) VALUES (...)
-    if (!/^\s*INSERT\s+INTO\s+\S+/i.test(value)) {
-      isValidStructure = false
-      errorMsg = 'INSERT语句格式不正确，应为 INSERT INTO table ...'
-    }
-  } else if (trimmedSql.startsWith('UPDATE')) {
-    // UPDATE table SET ...
-    if (!/^\s*UPDATE\s+\S+\s+SET\s+/i.test(value)) {
-      isValidStructure = false
-      errorMsg = 'UPDATE语句格式不正确，应为 UPDATE table SET ...'
-    }
-  } else if (trimmedSql.startsWith('DELETE')) {
-    // DELETE FROM table ...
-    if (!/^\s*DELETE\s+FROM\s+\S+/i.test(value)) {
-      isValidStructure = false
-      errorMsg = 'DELETE语句格式不正确，应为 DELETE FROM table ...'
-    }
-  }
-
-  if (!isValidStructure) {
-    callback(new Error(errorMsg))
-    return
-  }
-
   callback()
 }
 
@@ -372,27 +404,19 @@ const isValidSqlSyntax = (sql) => {
   if (!sql || sql.length < 6) {
     return false
   }
-
   // 基本语法检查
   const sqlWithoutComments = removeSqlComments(sql)
-
   // 检查是否存在常见的SQL语法错误
   // 检查括号是否匹配
   if (!hasMatchingParentheses(sqlWithoutComments)) {
     return false
   }
-
   // 检查是否包含危险字符或结构
   if (containsDangerousSql(sqlWithoutComments)) {
     return false
   }
-
   // 检查SQL语句结构
-  if (!checkSqlStructure(sqlWithoutComments)) {
-    return false
-  }
-
-  return true
+  return checkSqlStructure(sqlWithoutComments);
 }
 
 const removeSqlComments = (sql) => {
@@ -428,40 +452,6 @@ const containsDangerousSql = (sql) => {
     }
   }
   return false
-}
-
-// 检查SQL语句基本结构
-const checkSqlStructure = (sql) => {
-  // 检查是否存在基本的SQL语句结构
-  // SELECT语句检查
-  if (sql.includes('SELECT')) {
-    if (!sql.includes('FROM')) {
-      return false
-    }
-  }
-
-  // INSERT语句检查
-  if (sql.includes('INSERT')) {
-    if (!sql.includes('INTO') || !sql.includes('(')) {
-      return false
-    }
-  }
-
-  // UPDATE语句检查
-  if (sql.includes('UPDATE')) {
-    if (!sql.includes('SET')) {
-      return false
-    }
-  }
-
-  // DELETE语句检查
-  if (sql.includes('DELETE')) {
-    if (!sql.includes('FROM')) {
-      return false
-    }
-  }
-
-  return true
 }
 
 // 验证占位符参数名格式
@@ -500,50 +490,6 @@ const validateResponseTemplate = (rule, value, callback) => {
     return
   }
   callback()
-}
-
-// 解析SQL模板中的参数
-const parseSqlParameters = (sqlTemplate) => {
-  if (!sqlTemplate) return [];
-  const matches = [];
-  let match;
-  // 使用正则表达式匹配 #{参数名} 格式的参数
-  const regex = /[#,$]\{([^}]+)\}/g;
-  while ((match = regex.exec(sqlTemplate)) !== null) {
-    // 获取参数名（去掉空格）
-    const paramName = match[1].trim();
-
-    // 检查是否已存在相同参数名
-    if (!matches.some(param => param.name === paramName)) {
-      matches.push({
-        name: paramName,
-        type: 'String', // 默认类型
-        rules: {},
-        description: '',
-        readOnly: false
-      });
-    }
-  }
-
-  const regexCollection =/collection=\"([^"]+)\"/g;// /collection="\([^]+)\"/g;
-  while ((match = regexCollection.exec(sqlTemplate)) !== null) {
-    // 获取参数名（去掉空格）
-    const paramName = match[1].trim();
-    console.log("paramName "+paramName);
-
-    // 检查是否已存在相同参数名
-    if (!matches.some(param => param.name === paramName)) {
-      matches.push({
-        name: paramName,
-        type: 'String', // 默认类型
-        rules: {},
-        description: '',
-        readOnly: false
-      });
-    }
-  }
-
-  return matches;
 }
 
 // 同步SQL模板参数到参数定义
@@ -585,6 +531,18 @@ const syncSqlParamsToParamList = (sqlTemplate) => {
   });
 
   emit('update:paramList', newParamList);
+
+  // 解析响应参数
+  const sqlNormalized = normalizeMybatisSql(sql);
+  const astRes = parser.astify(sqlNormalized);
+  const columns = (astRes.columns || [])
+      .map(c => c.as || c.expr?.column)
+      .filter(t => t && t !== '*');
+  const newResponseList = syncResponseParams(
+      props.responseList || [],
+      columns
+  );
+  emit('update:responseList', newResponseList);
 }
 
 const formRules = {
@@ -604,6 +562,9 @@ const formRules = {
   responseTemplate: [
     {required: true, message: '请输入响应参数模板', trigger: 'blur'},
     {validator: validateResponseTemplate, trigger: 'blur'},
+  ],
+  responseDefinition: [
+    // 不需要校验，留空
   ]
 }
 
@@ -626,6 +587,10 @@ const getRuleDisplayText = (rulesObj) => {
   } catch (e) {
     return '规则格式错误'
   }
+}
+
+const handleTest = () => {
+
 }
 
 const handleDrawerClose = () => {
@@ -676,6 +641,23 @@ const handleSubmit = async () => {
       return;
     }
 
+    // 验证响应参数列表
+    const invalidResponses = props.responseList.filter(response =>
+        !response.name?.trim()
+    )
+    if (invalidResponses.length > 0) {
+      ElMessage.error('请填写所有响应参数名')
+      return
+    }
+
+    // 验证响应参数名重复性
+    const responseNames = props.responseList.map(response => response.name?.trim());
+    const uniqueResponseNames = new Set(responseNames);
+    if (uniqueResponseNames.size !== props.responseList.length) {
+      ElMessage.error('响应参数名不能重复');
+      return;
+    }
+
     emit('submit')
   } catch (error) {
     console.error('表单验证失败:', error)
@@ -688,9 +670,31 @@ const updateParam = (index, field, value) => {
   emit('update:paramList', newParamList)
 }
 
+const addResponse = () => {
+  const newResponseList = [...props.responseList, {
+    name: '',
+    type: 'String',
+    description: ''
+  }]
+  console.log("newResponseList ", newResponseList);
+  emit('update:responseList', newResponseList)
+}
+
+const removeResponse = (index) => {
+  const newResponseList = [...props.responseList]
+  newResponseList.splice(index, 1)
+  console.log("newResponseList ", newResponseList);
+  emit('update:responseList', newResponseList)
+}
+
+const updateResponse = (index, field, value) => {
+  const newResponseList = [...props.responseList]
+  newResponseList[index] = {...newResponseList[index], [field]: value}
+  emit('update:responseList', newResponseList)
+}
+
 const handleSqlTemplateChange = (value, viewUpdate) => {
-  console.log("handleSqlTemplateChange"+value);
-  
+  console.log("handleSqlTemplateChange" + value);
   // 更新表单数据
   emit('update:formData', {...props.formData, sqlTemplate: value})
   // 同步SQL模板参数到参数定义列表
@@ -711,42 +715,42 @@ const handlePagingParams = () => {
 }
 
 const tagSqlIf = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <if test="property != null"> </if>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
 
 const tagSqlForeach = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <foreach item="item" index="index" collection="list" open="(" separator="," close=")" nullable="true"> #{item} </foreach>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
 
 const tagSqlSet = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <set> </set>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
 
 const tagSqlChoose = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <choose> <when test="property != null"> </when> <otherwise> </otherwise> </choose>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
 const tagSqlTrim = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <trim prefix="WHERE | SET " prefixOverrides="AND |OR "> </trim>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
 
 const tagSqlWhere = (value) => {
-  var preSql = (props.formData.sqlTemplate+"").substring(0,sqlCodeEditor.value.getCursor());
-  var suffixSql = (props.formData.sqlTemplate+"").substring(sqlCodeEditor.value.getCursor());
+  var preSql = (props.formData.sqlTemplate + "").substring(0, sqlCodeEditor.value.getCursor());
+  var suffixSql = (props.formData.sqlTemplate + "").substring(sqlCodeEditor.value.getCursor());
   var tagedSql = preSql + ' <where> </where>' + suffixSql;
   emit('update:formData', {...props.formData, sqlTemplate: tagedSql})
 }
@@ -754,7 +758,7 @@ const tagSqlWhere = (value) => {
 
 const formatSql = (value) => {
   var fSql = format(props.formData.sqlTemplate);
-  console.log("format sqlTemplate "+fSql);
+  console.log("format sqlTemplate " + fSql);
   emit('update:formData', {...props.formData, sqlTemplate: fSql})
 }
 
@@ -834,22 +838,34 @@ const formatSql = (value) => {
   border-radius: 4px;
   font-size: 12px;
   color: #666;
-  width:100%;
+  width: 100%;
 }
 
 .template-code:focus {
-    box-shadow: 0 0 0 1px #409eff inset;
-    outline: none; 
+  box-shadow: 0 0 0 1px #409eff inset;
+  outline: none;
 }
 
 .template-code:hover {
-    box-shadow: 0 0 0 1px #409eff inset;
-    outline: none; 
+  box-shadow: 0 0 0 1px #409eff inset;
+  outline: none;
 }
 
 .form-item-tip {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.form-tabs {
+  :deep(.el-tabs__content) {
+    padding: 20px 0;
+  }
+}
+
+.tab-content {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 10px;
 }
 </style>

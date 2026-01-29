@@ -261,7 +261,6 @@ import {ElMessage} from 'element-plus'
 import * as publishApi from '@/api/api-service/publishApi.ts'
 import * as apiDefinitionApi from '@/api/api-service/apiDefinitionApi.ts'
 import * as apiVersionApi from '@/api/api-service/apiVersionApi.ts'
-import {getLatestPublishRecord} from "@/api/api-service/publishApi.ts";
 
 // 响应式数据
 const loading = ref(false)

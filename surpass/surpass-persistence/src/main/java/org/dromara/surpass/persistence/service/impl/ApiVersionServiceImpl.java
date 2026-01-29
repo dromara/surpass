@@ -90,7 +90,11 @@ public class ApiVersionServiceImpl extends JpaServiceImpl<ApiVersionMapper, ApiV
         }
 
         if (!oldVersion.getParamDefinition().equals(newVersion.getParamDefinition())) {
-            diff.append("参数定义有变化\n");
+            diff.append("请求参数定义有变化\n");
+        }
+
+        if (!oldVersion.getResponseDefinition().equals(newVersion.getResponseDefinition())) {
+            diff.append("响应参数有变化\n");
         }
 
         if (!oldVersion.getResponseTemplate().equals(newVersion.getResponseTemplate())) {

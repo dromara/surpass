@@ -45,15 +45,13 @@ import Resources from './auth/resources.vue'
 import ClientAuth from './auth/ClientAuth.vue'
 import RoleAuth from './auth/RoleAuth.vue'
 import PublishPage from '@/views/api/Publish.vue'
-import DebugPage from '@/views/api/Debug.vue'
 import { useRoute, useRouter } from "vue-router";
 
 const tabs = [
   { key: 'resources', label: '资源管理', component: Resources, icon: 'menu' },
   { key: 'client', label: '客户端授权', component: ClientAuth, icon: 'link' },
   { key: 'role', label: '角色授权', component: RoleAuth, icon: 'group' },
-  { key: 'publish', label: '接口发布记录', component: PublishPage, icon: 'history' },
-  { key: 'debug', label: '接口调试', component: DebugPage, icon: 'control' },
+  { key: 'publish', label: '接口发布记录', component: PublishPage, icon: 'history' }
 ]
 
 const active = ref('resources')
