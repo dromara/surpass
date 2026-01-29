@@ -103,13 +103,13 @@
                   <el-descriptions-item label="资源ID">
                     {{ selectedResource.id || '-' }}
                   </el-descriptions-item>
-                  <el-descriptions-item label="资源编码">
-                    {{ selectedResource.code || '-' }}
+                  <el-descriptions-item label="来源应用">
+                    <el-tag type="success" size="small">{{ selectedResource.belongApp || clientName }}</el-tag>
                   </el-descriptions-item>
-                  <el-descriptions-item label="来源应用" :span="2">
-                    <el-tag type="success" size="small">{{ selectedResource.appName || clientName }}</el-tag>
+                  <el-descriptions-item label="应用上下文">
+                    {{ selectedResource.contextPath || '-' }}
                   </el-descriptions-item>
-                  <el-descriptions-item label="资源路径" :span="2">
+                  <el-descriptions-item label="资源路径">
                     {{ selectedResource.path || '-' }}
                   </el-descriptions-item>
                   <el-descriptions-item label="描述" :span="2">
@@ -138,9 +138,12 @@
                       {{ selectedResource.url || selectedResource.path || '-' }}
                     </el-text>
                   </el-descriptions-item>
-                  <el-descriptions-item label="认证方式" :span="2">
-                    {{ selectedResource.authType || '默认认证' }}
+                  <el-descriptions-item label="所属数据源" v-if="selectedResource.classify === 'openApi'">
+                    {{ selectedResource.datasourceName || '-' }}
                   </el-descriptions-item>
+<!--                  <el-descriptions-item label="认证方式">
+                    {{ selectedResource.authType || '默认认证' }}
+                  </el-descriptions-item>-->
                 </el-descriptions>
 
                 <!-- 请求参数 -->
@@ -226,28 +229,28 @@
                   <el-descriptions-item label="菜单图标">
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <svg-icon
-                          :icon-class="selectedResource.icon || 'default'"
+                          :icon-class="selectedResource.resStyle || 'menu'"
                           style="width: 18px; height: 18px;"
                       />
-                      <span>{{ selectedResource.icon || '默认图标' }}</span>
+                      <span>{{ selectedResource.resStyle || '默认图标' }}</span>
                     </div>
                   </el-descriptions-item>
                   <el-descriptions-item label="排序">
-                    {{ selectedResource.sort || 0 }}
+                    {{ selectedResource.sortIndex || 0 }}
                   </el-descriptions-item>
                   <el-descriptions-item label="是否显示">
-                    <el-tag :type="selectedResource.visible ? 'success' : 'info'" size="small">
-                      {{ selectedResource.visible !== false ? '显示' : '隐藏' }}
+                    <el-tag :type="selectedResource.isVisible === 'y'? 'success' : 'info'" size="small">
+                      {{ selectedResource.isVisible !== 'n' ? '显示' : '隐藏' }}
                     </el-tag>
                   </el-descriptions-item>
                   <el-descriptions-item label="是否缓存">
-                    <el-tag :type="selectedResource.keepAlive ? 'success' : 'info'" size="small">
-                      {{ selectedResource.keepAlive ? '是' : '否' }}
+                    <el-tag :type="selectedResource.isCache === 'y'? 'success' : 'info'" size="small">
+                      {{ selectedResource.isCache === 'y'? '是' : '否' }}
                     </el-tag>
                   </el-descriptions-item>
                   <el-descriptions-item label="组件路径" :span="2">
                     <el-text type="primary" style="font-family: monospace;">
-                      {{ selectedResource.component || '-' }}
+                      {{ selectedResource.path || '-' }}
                     </el-text>
                   </el-descriptions-item>
                 </el-descriptions>
@@ -292,14 +295,14 @@
                     </el-tag>
                   </el-descriptions-item>
                   <el-descriptions-item label="创建时间">
-                    {{ formatDateTime(selectedResource.createTime) }}
+                    {{ formatDateTime(selectedResource.createdDate) }}
                   </el-descriptions-item>
                   <el-descriptions-item label="更新时间">
-                    {{ formatDateTime(selectedResource.updateTime) }}
+                    {{ formatDateTime(selectedResource.modifiedDate) }}
                   </el-descriptions-item>
                   <el-descriptions-item label="状态">
-                    <el-tag :type="selectedResource.status === 1 ? 'success' : 'danger'" size="small">
-                      {{ selectedResource.status === 1 ? '启用' : '禁用' }}
+                    <el-tag :type="selectedResource.status == 1 ? 'success' : 'danger'" size="small">
+                      {{ selectedResource.status == 1 ? '启用' : '禁用' }}
                     </el-tag>
                   </el-descriptions-item>
                   <el-descriptions-item label="备注" :span="2">
@@ -320,6 +323,7 @@ import {ref, onMounted, nextTick, computed} from 'vue'
 import {useRoute, useRouter} from "vue-router";
 import * as appResourcesApi from "@/api/app/resources";
 import { Upload, Download, Document } from '@element-plus/icons-vue'
+import {getById} from "@/api/api-service/apiDefinitionApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -381,21 +385,20 @@ const filterNode = (value: any, data: any) => {
 /** 节点单击事件 */
 function handleNodeClick(data: any) {
   console.log('选中的资源:', data)
-  selectedResource.value = data
 
-  // 如果需要从服务器获取详细信息,可以在这里调用API
-  // loadResourceDetail(data.id)
+  // 从服务器获取详细信息,可以在这里调用API
+  loadResourceDetail(data.id)
 }
 
-// 如果需要加载详细信息的API
-// const loadResourceDetail = async (resourceId: string) => {
-//   try {
-//     const res = await appResourcesApi.getResourceDetail(resourceId)
-//     selectedResource.value = res.data
-//   } catch (error) {
-//     console.error('加载资源详情失败:', error)
-//   }
-// }
+// 加载详细信息的API
+const loadResourceDetail = async (resourceId: string) => {
+  try {
+    const res = await getById(resourceId)
+    selectedResource.value = res.data
+  } catch (error) {
+    console.error('加载资源详情失败:', error)
+  }
+}
 
 const iconMap: Record<string, string> = {
   menu: 'menu',

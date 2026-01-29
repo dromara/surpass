@@ -1,16 +1,19 @@
 package org.dromara.surpass.web.app.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.hutool.core.tree.MapTree;
 import org.dromara.mybatis.jpa.entity.JpaPageResults;
 import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.surpass.entity.ClientPermission;
 import org.dromara.surpass.entity.Message;
+import org.dromara.surpass.entity.api.ApiDataSource;
 import org.dromara.surpass.entity.app.App;
 import org.dromara.surpass.entity.app.AppResources;
 import org.dromara.surpass.entity.app.dto.AppResourcesChangeDto;
 import org.dromara.surpass.entity.app.dto.AppResourcesPageDto;
 import org.dromara.surpass.entity.app.dto.ClientAuthzDto;
+import org.dromara.surpass.persistence.service.ApiDataSourceService;
 import org.dromara.surpass.persistence.service.AppResourcesService;
 import org.dromara.surpass.persistence.service.AppService;
 import org.dromara.surpass.persistence.service.ClientPermissionService;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @description:
@@ -40,6 +44,8 @@ public class AppResourcesController {
     private final AppService appService;
 
     private final ClientPermissionService clientPermissionService;
+
+    private final ApiDataSourceService apiDataSourceService;
 
     @PostMapping("/add")
     public Message<String> addResources(@Validated(value = AddGroup.class) @RequestBody AppResourcesChangeDto dto) {
@@ -60,15 +66,27 @@ public class AppResourcesController {
 
     @GetMapping("/get/{id}")
     public Message<AppResources> get(@PathVariable String id) {
-        AppResources appResources = appResourcesService.get(id);
-        if (Objects.nonNull(appResources)) {
-            App app = appService.get(appResources.getAppId());
-            if (Objects.nonNull(app)) {
-                appResources.setContextPath(app.getContextPath());
-                appResources.setBelongApp(app.getAppName());
-            }
+
+        var resource = appResourcesService.get(id);
+        if (resource == null) {
+            return Message.ok(null);
         }
-        return Message.ok(appResources);
+
+        // 所属应用
+        Optional.ofNullable(resource.getAppId())
+                .map(appService::get)
+                .ifPresent(app -> {
+                    resource.setContextPath(app.getContextPath());
+                    resource.setBelongApp(app.getAppName());
+                });
+
+        // 数据源
+        Optional.ofNullable(resource.getDatasourceId())
+                .filter(StringUtils::isNotBlank)
+                .map(apiDataSourceService::get)
+                .ifPresent(ds -> resource.setDatasourceName(ds.getName()));
+
+        return Message.ok(resource);
     }
 
     @DeleteMapping(value = {"/delete"})

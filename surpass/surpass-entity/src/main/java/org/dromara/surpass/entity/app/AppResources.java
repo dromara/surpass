@@ -121,4 +121,6 @@ public class AppResources extends JpaEntity implements Serializable {
     private String contextPath;
 
     private String belongApp;
+
+    private String datasourceName;
 }
