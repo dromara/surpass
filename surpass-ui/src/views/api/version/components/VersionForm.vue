@@ -5,6 +5,8 @@
         :model-value="drawerVisible"
         direction="rtl"
         size="60%"
+        append-to-body
+        destroy-on-close
         :before-close="handleDrawerClose"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
@@ -15,11 +17,11 @@
         <div style="display: flex; justify-content: space-between;align-items: center">
           <h4>{{ dialogTitle }}</h4>
           <div class="drawer-footer">
-            <el-button @click="handleTest">测试</el-button>
-            <el-button @click="handleDrawerClose">取消</el-button>
+            <el-button type="danger" @click="handleTest">测试</el-button>
             <el-button type="primary" @click="handleSubmit" :loading="submitting">
               保存
             </el-button>
+            <el-button @click="handleDrawerClose">取消</el-button>
           </div>
         </div>
       </template>
@@ -272,6 +274,7 @@
         v-model="testDialogVisible"
         title="API测试"
         size="1200px"
+        destroy-on-close
         :close-on-click-modal="false"
         :close-on-press-escape="false"
     >

@@ -1,47 +1,87 @@
 <template>
-  <div class="el-login-footer" :style="{'position': props.position}">
-    <div> Surpass<br/>
+  <div
+      class="el-login-footer"
+      :style="{ position: 'fixed', transform: visible ? 'translateY(0)' : 'translateY(100%)' }"
+  >
+    <div>
+      Surpass<br/>
       Version {{ version }}<br/>
       Copyright
       <i class="anticon anticon-copyright">
-        <svg viewBox="64 64 896 896" focusable="false" fill="currentColor" width="1em" height="1em"
-             data-icon="copyright" aria-hidden="true">
+        <svg
+            viewBox="64 64 896 896"
+            focusable="false"
+            fill="currentColor"
+            width="1em"
+            height="1em"
+            data-icon="copyright"
+            aria-hidden="true"
+        >
           <path
-              d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372zm5.6-532.7c53 0 89 33.8 93 83.4.3 4.2 3.8 7.4 8 7.4h56.7c2.6 0 4.7-2.1 4.7-4.7 0-86.7-68.4-147.4-162.7-147.4C407.4 290 344 364.2 344 486.8v52.3C344 660.8 407.4 734 517.3 734c94 0 162.7-58.8 162.7-141.4 0-2.6-2.1-4.7-4.7-4.7h-56.8c-4.2 0-7.6 3.2-8 7.3-4.2 46.1-40.1 77.8-93 77.8-65.3 0-102.1-47.9-102.1-133.6v-52.6c.1-87 37-135.5 102.2-135.5z"></path>
+              d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372zm5.6-532.7c53 0 89 33.8 93 83.4.3 4.2 3.8 7.4 8 7.4h56.7c2.6 0 4.7-2.1 4.7-4.7 0-86.7-68.4-147.4-162.7-147.4C407.4 290 344 364.2 344 486.8v52.3C344 660.8 407.4 734 517.3 734c94 0 162.7-58.8 162.7-141.4 0-2.6-2.1-4.7-4.7-4.7h-56.8c-4.2 0-7.6 3.2-8 7.3-4.2 46.1-40.1 77.8-93 77.8-65.3 0-102.1-47.9-102.1-133.6v-52.6c.1-87 37-135.5 102.2-135.5z"
+          ></path>
         </svg>
-      </i> {{ time }} <a href="//www.surpass.com" target="_blank"> Surpass </a>. All rights reserved .
+      </i>
+      {{ time }}
+      <a href="//www.surpass.com" target="_blank"> Surpass </a>. All rights reserved.
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {parseTime} from "@/utils/Surpass"
-import {ref} from "vue";
+import {ref, onMounted, onUnmounted} from "vue";
+import {parseTime} from "@/utils/Surpass";
 
-const version = ref(__APP_VERSION__)
-const time = ref(parseTime(new Date(), "{y}"))
-const props = defineProps({
-  position: {
-    type: String,
-    default: () => {
-      return "fixed"
-    }
+const version = ref(__APP_VERSION__);
+const time = ref(parseTime(new Date(), "{y}"));
+
+const visible = ref(false);
+let hideTimer: number | null = null;
+
+const showFooter = () => {
+  visible.value = true;
+  if (hideTimer) clearTimeout(hideTimer);
+  hideTimer = window.setTimeout(() => {
+    visible.value = false;
+  }, 5000); // 超过5秒自动隐藏
+};
+
+const onMouseMove = (e: MouseEvent) => {
+  const threshold = 10; // 离底部30px
+  const windowHeight = window.innerHeight;
+  if (windowHeight - e.clientY <= threshold) {
+    showFooter();
+  } else if (visible.value) {
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => {
+      visible.value = false;
+    }, 300); // 离开底部30px后300ms隐藏
   }
-})
+};
 
+onMounted(() => {
+  window.addEventListener("mousemove", onMouseMove);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("mousemove", onMouseMove);
+  if (hideTimer) clearTimeout(hideTimer);
+});
 </script>
 
 <style scoped lang="scss">
 .el-login-footer {
-  position: relative;
+  left: 0;
   bottom: 0;
-  border-top: 1px solid #e5e5e5;
   width: 100%;
   text-align: center;
   font-size: 14px;
-  color: #000000AA;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  color: #000000aa;
+  padding: 10px 0;
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+  z-index: 9999;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 
   a {
     color: #1890ff;

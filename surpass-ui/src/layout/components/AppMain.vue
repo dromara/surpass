@@ -7,14 +7,12 @@
 
     <router-view v-slot="{ Component, route }">
       <transition name="fade-transform" mode="out-in">
-<!--        <keep-alive :include="tagsViewStore.cachedViews">-->
-<!--        </keep-alive>-->
+        <!--        <keep-alive :include="tagsViewStore.cachedViews">-->
+        <!--        </keep-alive>-->
         <component v-if="!route.meta.link" :is="Component" :key="route.path"/>
       </transition>
     </router-view>
     <iframe-toggle/>
-
-
   </section>
   <Footer position="relative"></Footer>
 </template>
@@ -24,6 +22,7 @@ import iframeToggle from "./IframeToggle/index"
 import useTagsViewStore from '@/store/modules/tagsView'
 import Breadcrumb from "@/components/Breadcrumb/index.vue";
 import Footer from "@/components/Footer/index.vue";
+
 const route = useRoute();
 const tagsViewStore = useTagsViewStore()
 </script>
