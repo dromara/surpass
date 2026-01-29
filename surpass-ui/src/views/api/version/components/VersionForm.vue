@@ -1,274 +1,298 @@
 <template>
-  <el-drawer
-      :title="dialogTitle"
-      :model-value="drawerVisible"
-      direction="rtl"
-      size="60%"
-      :before-close="handleDrawerClose"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      @update:model-value="$emit('update:visible', $event)"
-  >
-    <template #header>
-      <h4>{{ dialogTitle }}</h4>
-    </template>
-    <div class="drawer-content">
-      <el-form
-          ref="formRef"
-          :model="formData"
-          :rules="formRules"
-          label-width="100px"
-      >
-        <el-tabs v-model="activeTab" class="form-tabs">
-          <el-tab-pane label="基础配置" name="basic">
-            <div class="tab-content">
-              <el-form-item label="版本号" prop="version">
-                <el-input-number
-                    :model-value="formData.version"
-                    :min="1"
-                    :max="999"
-                    placeholder="请输入版本号"
-                    @update:model-value="$emit('update:formData', { ...props.formData, version: $event })"
-                />
-              </el-form-item>
-              <el-form-item label="操作类型" prop="supportsPaging">
-                <el-radio-group
-                    :model-value="formData.supportsPaging"
-                    @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
-                    @change="handlePagingParams"
-                >
-                  <el-radio-button label="1">
-                    分页
-                  </el-radio-button>
-                  <el-radio-button label="2">
-                    列表
-                  </el-radio-button>
-                  <el-radio-button label="3">
-                    单记录
-                  </el-radio-button>
-                  <el-radio-button label="4">
-                    增加
-                  </el-radio-button>
-                  <el-radio-button label="5">
-                    修改
-                  </el-radio-button>
-                  <el-radio-button label="6">
-                    删除
-                  </el-radio-button>
-                </el-radio-group>
-              </el-form-item>
+  <div>
+    <el-drawer
+        :title="dialogTitle"
+        :model-value="drawerVisible"
+        direction="rtl"
+        size="60%"
+        :before-close="handleDrawerClose"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        :showClose="false"
+        @update:model-value="$emit('update:visible', $event)"
+    >
+      <template #header>
+        <div style="display: flex; justify-content: space-between;align-items: center">
+          <h4>{{ dialogTitle }}</h4>
+          <div class="drawer-footer">
+            <el-button @click="handleTest">测试</el-button>
+            <el-button @click="handleDrawerClose">取消</el-button>
+            <el-button type="primary" @click="handleSubmit" :loading="submitting">
+              保存
+            </el-button>
+          </div>
+        </div>
+      </template>
+      <div class="drawer-content">
+        <el-form
+            ref="formRef"
+            :model="formData"
+            :rules="formRules"
+            label-width="100px"
+        >
+          <el-tabs v-model="activeTab" class="form-tabs">
+            <el-tab-pane label="基础配置" name="basic">
+              <div class="tab-content">
+                <el-form-item label="版本号" prop="version">
+                  <el-input-number
+                      :model-value="formData.version"
+                      :min="1"
+                      :max="999"
+                      placeholder="请输入版本号"
+                      @update:model-value="$emit('update:formData', { ...props.formData, version: $event })"
+                  />
+                </el-form-item>
+                <el-form-item label="操作类型" prop="supportsPaging">
+                  <el-radio-group
+                      :model-value="formData.supportsPaging"
+                      @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
+                      @change="handlePagingParams"
+                  >
+                    <el-radio-button label="1">
+                      分页
+                    </el-radio-button>
+                    <el-radio-button label="2">
+                      列表
+                    </el-radio-button>
+                    <el-radio-button label="3">
+                      单记录
+                    </el-radio-button>
+                    <el-radio-button label="4">
+                      增加
+                    </el-radio-button>
+                    <el-radio-button label="5">
+                      修改
+                    </el-radio-button>
+                    <el-radio-button label="6">
+                      删除
+                    </el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
 
-              <el-form-item label="分页大小" prop="pageSizeMax" v-if="formData.supportsPaging === '1'">
-                <el-input-number
-                    style="width: 200px;"
-                    :model-value="formData.pageSizeMax"
-                    :min="1"
-                    :max="9999"
-                    placeholder=""
-                    controls-position="right"
-                    @update:model-value="$emit('update:formData', { ...props.formData, pageSizeMax: $event })"
-                />
-                <div class="form-item-tip">限制每页最大记录数</div>
-              </el-form-item>
+                <el-form-item label="分页大小" prop="pageSizeMax" v-if="formData.supportsPaging === '1'">
+                  <el-input-number
+                      style="width: 200px;"
+                      :model-value="formData.pageSizeMax"
+                      :min="1"
+                      :max="9999"
+                      placeholder=""
+                      controls-position="right"
+                      @update:model-value="$emit('update:formData', { ...props.formData, pageSizeMax: $event })"
+                  />
+                  <div class="form-item-tip">限制每页最大记录数</div>
+                </el-form-item>
 
-              <el-form-item label="描述" prop="description">
-                <el-input
-                    :model-value="formData.description"
-                    type="textarea"
-                    :rows="2"
-                    placeholder="请输入版本描述"
-                    @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
-                />
-              </el-form-item>
-            </div>
-          </el-tab-pane>
+                <el-form-item label="描述" prop="description">
+                  <el-input
+                      :model-value="formData.description"
+                      type="textarea"
+                      :rows="2"
+                      placeholder="请输入版本描述"
+                      @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
+                  />
+                </el-form-item>
+              </div>
+            </el-tab-pane>
 
-          <el-tab-pane label="请求参数" name="request">
-            <div class="tab-content">
-              <el-form-item label="SQL模板" prop="sqlTemplate">
-                <el-button type="warning" @click="formatSql">格式化</el-button>
+            <el-tab-pane label="请求参数" name="request">
+              <div class="tab-content">
+                <el-form-item label="SQL模板" prop="sqlTemplate">
+                  <el-button type="warning" @click="formatSql">格式化</el-button>
 
-                <el-button type="primary" text bg @click="tagSqlIf"> &lt;if&gt;</el-button>
-                <el-button type="primary" text bg @click="tagSqlForeach"> &lt;foreach&gt;</el-button>
-                <el-button type="primary" text bg @click="tagSqlChoose"> &lt;choose&gt;</el-button>
-                <el-button type="primary" text bg @click="tagSqlTrim"> &lt;trim&gt;</el-button>
-                <el-button type="primary" text bg @click="tagSqlWhere"> &lt;where&gt;</el-button>
-                <el-button type="primary" text bg @click="tagSqlSet"> &lt;set&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlIf"> &lt;if&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlForeach"> &lt;foreach&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlChoose"> &lt;choose&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlTrim"> &lt;trim&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlWhere"> &lt;where&gt;</el-button>
+                  <el-button type="primary" text bg @click="tagSqlSet"> &lt;set&gt;</el-button>
 
-                <code-mirror ref="sqlCodeEditor"
-                             :lang="sql()"
-                             style="width:100%;min-height:60px;"
-                             class="template-code"
-                             basic
-                             wrap
-                             v-model="formData.sqlTemplate"
-                             @update:model-value="handleSqlTemplateChange"
-                             placeholder="请输入SQL模板，支持命名参数如 #{name}"/>
-              </el-form-item>
-              <el-form-item label="请求参数定义" prop="paramDefinition">
-                <div class="param-definition-container">
-                  <div class="param-header">
-                    <span></span>
-                    <el-button type="primary" size="small" @click="addParam">
-                      添加参数
-                    </el-button>
+                  <code-mirror ref="sqlCodeEditor"
+                               :lang="sql()"
+                               style="width:100%;min-height:60px;"
+                               class="template-code"
+                               basic
+                               wrap
+                               v-model="formData.sqlTemplate"
+                               @update:model-value="handleSqlTemplateChange"
+                               placeholder="请输入SQL模板，支持命名参数如 #{name}"/>
+                </el-form-item>
+                <el-form-item label="请求参数定义" prop="paramDefinition">
+                  <div class="param-definition-container">
+                    <div class="param-header">
+                      <span></span>
+                      <el-button type="primary" size="small" @click="addParam">
+                        添加参数
+                      </el-button>
+                    </div>
+                    <el-table :data="paramList" border style="width: 100%; margin-top: 10px;">
+                      <el-table-column prop="name" label="参数名" width="180">
+                        <template #default="{ row, $index }">
+                          <el-input
+                              :model-value="row.name"
+                              placeholder="参数名"
+                              :readonly="row.readOnly"
+                              :class="{ 'read-only-param': row.readOnly, 'input-error': !row.name }"
+                              @input="updateParam($index, 'name', $event)"
+                          />
+                          <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="type" label="类型" width="200">
+                        <template #default="{ row, $index }">
+                          <el-select
+                              :model-value="row.type"
+                              placeholder="选择类型"
+                              :disabled="row.readOnly"
+                              @update:model-value="updateParam($index, 'type', $event)"
+                          >
+                            <template v-for="(type, index) in paramInfoList" :key="index">
+                              <el-option :label="type.label" :value="type.value"></el-option>
+                            </template>
+                          </el-select>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="rules" label="输入规则">
+                        <template #default="{ row }">
+                          <el-button
+                              link
+                              type="primary"
+                              @click="openRuleConfig(row)"
+                              :title="JSON.stringify(row.rules, null, 2)"
+                              :disabled="row.readOnly"
+                          >
+                            {{ getRuleDisplayText(row.rules) || '配置规则' }}
+                          </el-button>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="description" label="描述">
+                        <template #default="{ row, $index }">
+                          <el-input
+                              :model-value="row.description"
+                              placeholder="参数描述"
+                              :readonly="row.readOnly"
+                              @update:model-value="updateParam($index, 'description', $event)"
+                          />
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="操作" width="60" align="center">
+                        <template #default="{ $index }">
+                          <el-button
+                              icon="Delete"
+                              link
+                              type="danger"
+                              size="small"
+                              @click="removeParam($index)"
+                              :disabled="paramList[$index]?.readOnly"
+                          ></el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
                   </div>
-                  <el-table :data="paramList" border style="width: 100%; margin-top: 10px;">
-                    <el-table-column prop="name" label="参数名" width="180">
-                      <template #default="{ row, $index }">
-                        <el-input
-                            :model-value="row.name"
-                            placeholder="参数名"
-                            :readonly="row.readOnly"
-                            :class="{ 'read-only-param': row.readOnly, 'input-error': !row.name }"
-                            @input="updateParam($index, 'name', $event)"
-                        />
-                        <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="type" label="类型" width="200">
-                      <template #default="{ row, $index }">
-                        <el-select
-                            :model-value="row.type"
-                            placeholder="选择类型"
-                            :disabled="row.readOnly"
-                            @update:model-value="updateParam($index, 'type', $event)"
-                        >
-                          <template v-for="(type, index) in paramInfoList" :key="index">
-                            <el-option :label="type.label" :value="type.value"></el-option>
-                          </template>
-                        </el-select>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="rules" label="输入规则">
-                      <template #default="{ row }">
-                        <el-button
-                            link
-                            type="primary"
-                            @click="openRuleConfig(row)"
-                            :title="JSON.stringify(row.rules, null, 2)"
-                            :disabled="row.readOnly"
-                        >
-                          {{ getRuleDisplayText(row.rules) || '配置规则' }}
-                        </el-button>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="description" label="描述">
-                      <template #default="{ row, $index }">
-                        <el-input
-                            :model-value="row.description"
-                            placeholder="参数描述"
-                            :readonly="row.readOnly"
-                            @update:model-value="updateParam($index, 'description', $event)"
-                        />
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="操作" width="60" align="center">
-                      <template #default="{ $index }">
-                        <el-button
-                            icon="Delete"
-                            link
-                            type="danger"
-                            size="small"
-                            @click="removeParam($index)"
-                            :disabled="paramList[$index]?.readOnly"
-                        ></el-button>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </div>
-              </el-form-item>
-            </div>
-          </el-tab-pane>
+                </el-form-item>
+              </div>
+            </el-tab-pane>
 
-          <el-tab-pane label="响应参数" name="response">
-            <div class="tab-content">
-              <el-form-item label="响应模板" prop="responseTemplate">
-                <code-mirror :lang="json()" style="width:100%;min-height:60px;" class="template-code" basic
-                             v-model="formData.responseTemplate"
-                             placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"/>
-                <div class="template-tips">
-                  <p><strong>模板提示：</strong></p>
-                  <p>• 使用 <code>#{data}</code> 占位符代表查询结果数据（必须包含）</p>
-                  <p>• 示例：<code>{"code": 0, "message": "success", "data": #{data}}</code></p>
-                  <p>• 支持JSON格式，系统会自动将查询结果替换到 #{data} 位置</p>
-                </div>
-              </el-form-item>
-              <el-form-item label="响应参数定义" prop="responseDefinition">
-                <div class="param-definition-container">
-                  <div class="param-header">
-                    <span></span>
-                    <el-button type="primary" size="small" @click="addResponse">
-                      添加响应参数
-                    </el-button>
+            <el-tab-pane label="响应参数" name="response">
+              <div class="tab-content">
+                <el-form-item label="响应模板" prop="responseTemplate">
+                  <code-mirror :lang="json()" style="width:100%;min-height:60px;" class="template-code" basic
+                               v-model="formData.responseTemplate"
+                               placeholder="请输入响应模板，支持 #{data} 占位符代表结果数据"/>
+                  <div class="template-tips">
+                    <p><strong>模板提示：</strong></p>
+                    <p>• 使用 <code>#{data}</code> 占位符代表查询结果数据（必须包含）</p>
+                    <p>• 示例：<code>{"code": 0, "message": "success", "data": #{data}}</code></p>
+                    <p>• 支持JSON格式，系统会自动将查询结果替换到 #{data} 位置</p>
                   </div>
-                  <el-table :data="responseList" border style="width: 100%; margin-top: 10px;">
-                    <el-table-column prop="name" label="参数名" width="180">
-                      <template #default="{ row, $index }">
-                        <el-input
-                            :model-value="row.name"
-                            placeholder="响应参数名"
-                            :class="{ 'input-error': !row.name }"
-                            @input="updateResponse($index, 'name', $event)"
-                        />
-                        <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="type" label="类型" width="200">
-                      <template #default="{ row, $index }">
-                        <el-select
-                            :model-value="row.type"
-                            placeholder="选择类型"
-                            @update:model-value="updateResponse($index, 'type', $event)"
-                        >
-                          <template v-for="(type, index) in paramInfoList" :key="index">
-                            <el-option :label="type.label" :value="type.value"></el-option>
-                          </template>
-                        </el-select>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="description" label="描述">
-                      <template #default="{ row, $index }">
-                        <el-input
-                            :model-value="row.description"
-                            placeholder="参数描述"
-                            @update:model-value="updateResponse($index, 'description', $event)"
-                        />
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="操作" width="60" align="center">
-                      <template #default="{ $index }">
-                        <el-button
-                            icon="Delete"
-                            link
-                            type="danger"
-                            size="small"
-                            @click="removeResponse($index)"
-                        ></el-button>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </div>
-              </el-form-item>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </el-form>
-
-      <div class="drawer-footer">
-        <el-button @click="handleTest">测试</el-button>
-        <el-button @click="handleDrawerClose">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          保存
-        </el-button>
+                </el-form-item>
+                <el-form-item label="响应参数定义" prop="responseDefinition">
+                  <div class="param-definition-container">
+                    <div class="param-header">
+                      <span></span>
+                      <el-button type="primary" size="small" @click="addResponse">
+                        添加响应参数
+                      </el-button>
+                    </div>
+                    <el-table :data="responseList" border style="width: 100%; margin-top: 10px;">
+                      <el-table-column prop="name" label="参数名" width="180">
+                        <template #default="{ row, $index }">
+                          <el-input
+                              :model-value="row.name"
+                              placeholder="响应参数名"
+                              :class="{ 'input-error': !row.name }"
+                              @input="updateResponse($index, 'name', $event)"
+                          />
+                          <el-text v-if="!row.name" type="warning" size="small">请输入参数名</el-text>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="type" label="类型" width="200">
+                        <template #default="{ row, $index }">
+                          <el-select
+                              :model-value="row.type"
+                              placeholder="选择类型"
+                              @update:model-value="updateResponse($index, 'type', $event)"
+                          >
+                            <template v-for="(type, index) in paramInfoList" :key="index">
+                              <el-option :label="type.label" :value="type.value"></el-option>
+                            </template>
+                          </el-select>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="description" label="描述">
+                        <template #default="{ row, $index }">
+                          <el-input
+                              :model-value="row.description"
+                              placeholder="参数描述"
+                              @update:model-value="updateResponse($index, 'description', $event)"
+                          />
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="操作" width="60" align="center">
+                        <template #default="{ $index }">
+                          <el-button
+                              icon="Delete"
+                              link
+                              type="danger"
+                              size="small"
+                              @click="removeResponse($index)"
+                          ></el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                </el-form-item>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-form>
       </div>
-    </div>
-  </el-drawer>
+    </el-drawer>
+
+    <el-drawer
+        v-model="testDialogVisible"
+        title="API测试"
+        size="1200px"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+    >
+      <template #header>
+        <div style="display: flex; justify-content: space-between;align-items: center">
+          <h4>API测试</h4>
+        </div>
+      </template>
+      <DebugComponent
+          v-if="testDialogVisible"
+          :api-info="apiInfoForTest"
+          :version-info="versionInfoForTest"
+          :param-definition="formData.paramDefinition"
+      />
+    </el-drawer>
+  </div>
 </template>
 
 <script setup>
 import {ref, computed, defineProps, defineEmits} from 'vue'
-import {ElMessage} from 'element-plus'
+import {ElMessage, ElDialog} from 'element-plus'
 import {apiParamTypeList} from '@/utils/enums/ApiContants.ts'
 import {json} from "@codemirror/lang-json";  //引入json语言支持
 import {sql} from "@codemirror/lang-sql";
@@ -276,6 +300,8 @@ import CodeMirror from 'vue-codemirror6';
 import {format} from '@/api/formatter.js'
 import {Parser} from 'node-sql-parser';
 import {parseSqlParameters, checkSqlStructure, syncResponseParams, normalizeMybatisSql} from "@/utils/SqlUtil.ts"
+import * as apiDefinitionApi from '@/api/api-service/apiDefinitionApi.ts'
+import DebugComponent from './DebugComponent.vue'
 
 const parser = new Parser();
 const props = defineProps({
@@ -335,7 +361,8 @@ const emit = defineEmits([
 const formRef = ref()
 const sqlCodeEditor = ref();
 const activeTab = ref('basic')
-const dialogTitle = computed(() => props.isEdit ? '编辑版本' : '新增版本')
+const testDialogVisible = ref(false)
+const dialogTitle = computed(() => props.isEdit ? '编辑' : '新增')
 const drawerVisible = computed({
   get() {
     return props.visible
@@ -344,6 +371,10 @@ const drawerVisible = computed({
     emit('update:visible', value)
   }
 })
+
+// 测试相关的数据
+const apiInfoForTest = ref(null)
+const versionInfoForTest = ref(null)
 
 const validateSqlTemplate = (rule, value, callback) => {
   if (!value) {
@@ -589,8 +620,49 @@ const getRuleDisplayText = (rulesObj) => {
   }
 }
 
-const handleTest = () => {
+const handleTest = async () => {
+  try {
+    // 验证表单
+    await formRef.value.validate()
 
+    // 检查是否有API ID
+    if (!props.formData.apiId) {
+      ElMessage.error('请先保存API定义')
+      return
+    }
+
+    // 加载API信息
+    ElMessage.info('正在加载API信息...')
+    const apiResponse = await apiDefinitionApi.getById(props.formData.apiId)
+
+    if (!apiResponse.data) {
+      ElMessage.error('API信息加载失败')
+      return
+    }
+
+    // 准备测试数据
+    apiInfoForTest.value = apiResponse.data
+
+    // 准备版本信息（使用当前表单数据）
+    versionInfoForTest.value = {
+      ...props.formData,
+      paramDefinition: props.formData.paramDefinition || JSON.stringify(props.paramList.map(param => ({
+        name: param.name,
+        type: param.type,
+        rules: param.rules,
+        description: param.description
+      })))
+    }
+
+    // 显示测试弹框
+    testDialogVisible.value = true
+
+  } catch (error) {
+    console.error('测试准备失败:', error)
+    if (error.message !== '表单验证失败') {
+      ElMessage.error('测试准备失败: ' + (error.message || '未知错误'))
+    }
+  }
 }
 
 const handleDrawerClose = () => {
@@ -786,11 +858,8 @@ const formatSql = (value) => {
 }
 
 .drawer-footer {
-  margin-top: auto;
-  padding-top: 20px;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  justify-content: center;
 }
 
 .param-definition-container {

@@ -1,239 +1,216 @@
 <template>
-  <div class="debug-page">
-    <div class="main-content">
-      <!-- API选择 -->
-      <el-card class="api-selector-card" shadow="never">
+  <div class="debug-component">
+    <!-- API信息 -->
+    <div class="api-info" v-if="apiInfo && versionInfo">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="API名称">
+          {{ apiInfo.name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="路径">
+          <el-tag>{{ apiInfo.path }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="方法">
+          <el-tag :type="getMethodTagType(apiInfo.method)">
+            {{ apiInfo.method }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="当前版本">
+          <el-tag type="success">v{{ versionInfo.version }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="所属应用">
+          <el-tag>{{ apiInfo.belongApp }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="应用上下文路径">
+          <el-tag>{{ apiInfo.contextPath }}</el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+    </div>
+
+    <!-- SQL模板预览 -->
+    <div class="sql-preview" v-if="versionInfo">
+      <div class="code-block">
+        <pre><code class="sql">{{ versionInfo.sqlTemplate }}</code></pre>
+      </div>
+    </div>
+
+    <!-- 请求配置 -->
+    <div class="request-config" v-if="versionInfo">
+      <el-card class="config-card" shadow="never">
         <template #header>
           <div class="card-header">
-            <div style="display: flex;justify-content: flex-start;align-items: center">
-              <span>选择API：</span>
-              <div class="selector-content">
-                <el-select
-                    v-model="selectedApiId"
-                    placeholder="请选择API"
-                    style="width: 400px"
-                    @change="loadApiDetail"
-                    :loading="apiLoading"
-                >
-                  <el-option
-                      v-for="api in apiList"
-                      :key="api.id"
-                      :label="api.name"
-                      :value="api.id"
-                  >
-                    <div class="api-option">
-                      <span class="api-name">{{ api.name }}</span>
-                      <span class="api-path">{{ api.path }}</span>
-                    </div>
-                  </el-option>
-                </el-select>
-              </div>
-            </div>
+            <span>请求参数</span>
+            <el-button type="primary" size="small" @click="addParam">
+              添加参数
+            </el-button>
           </div>
         </template>
 
+        <!-- 参数配置 -->
+        <div class="params-section">
+          <div class="params-list">
+            <div
+                v-for="(param, index) in requestParams"
+                :key="index"
+                class="param-item"
+                :class="{ 'param-error': param.error }"
+            >
+              <el-input
+                  v-model="param.name"
+                  placeholder="参数名"
+                  style="width: 150px"
+                  readonly
+              />
+              <el-select
+                  v-model="param.type"
+                  placeholder="类型"
+                  style="width: 250px"
+                  :disabled="param.readOnly"
+              >
+                <template v-for="(type, index) in paramInfoList" :key="index">
+                  <el-option :label="type.label" :value="type.value"></el-option>
+                </template>
+              </el-select>
+              <el-input
+                  v-if="!param.type.startsWith('Array')"
+                  v-model="param.value"
+                  placeholder="参数值"
+                  @input="validateParam(param)"
+                  :class="{ 'invalid-param': param.error }"
+              />
+              <div v-else class="array-params">
+                <el-button icon="plus" type="primary" @click="param.value.push('')"></el-button>
+                <template v-for="(item, index) in param.value" :key="index">
+                  <el-input
+                      v-model="param.value[index]"
+                      :placeholder="'参数['+index+']值'"
+                      style="width: 200px;"
+                      @input="validateParam(param)"
+                      :class="{ 'invalid-param': param.error }"
+                  >
+                    <template #append>
+                      <el-button slot="append" icon="Delete" size="small"
+                                 @click="param.value.splice(index, 1)"></el-button>
+                    </template>
+                  </el-input>
+                </template>
+                <el-button v-if="param.value.length > 0" icon="DeleteFilled" type="danger" size="small"
+                           @click="param.value.length = 0">清空
+                </el-button>
+              </div>
+              <div class="param-info">
+                <el-tooltip
+                    :content="getRuleDisplayText(param.rules)"
+                    placement="top"
+                >
+                  <el-icon :color="param.rules.required ? '#f56c6c' : '#909399'">
+                    <InfoFilled/>
+                  </el-icon>
+                </el-tooltip>
+              </div>
+              <div class="param-status">
+                <el-icon v-if="param.error" color="#f56c6c">
+                  <CircleClose/>
+                </el-icon>
+                <el-icon v-else-if="param.value || !param.required" color="#67c23a">
+                  <Success/>
+                </el-icon>
+              </div>
+            </div>
+          </div>
+          <div class="validation-info" v-if="hasValidationErrors">
+            <el-alert
+                title="参数验证失败，请检查标红的参数"
+                type="error"
+                show-icon
+                :closable="false"
+            />
+          </div>
+        </div>
 
-        <!-- API信息 -->
-        <div class="api-info" v-if="selectedApi && currentVersion">
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="API名称">
-              {{ selectedApi.name }}
+        <!-- 执行按钮 -->
+        <div class="execute-section">
+          <el-button
+              type="primary"
+              @click="executeApi"
+              :loading="executing"
+              :disabled="!apiInfo"
+              size="large"
+          >
+            <el-icon>
+              <Promotion/>
+            </el-icon>
+            执行API
+          </el-button>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 响应结果 -->
+    <div class="response-result" v-if="responseData">
+      <el-card class="response-card" shadow="never">
+        <template #header>
+          <div class="card-header">
+            <span>响应结果</span>
+            <el-tag :type="responseData.code === 0 ? 'success' : 'danger'">
+              {{ responseData.code === 0 ? '成功' : '失败' }}
+            </el-tag>
+          </div>
+        </template>
+
+        <div class="response-info">
+          <el-descriptions :column="3" border size="small">
+            <el-descriptions-item label="状态码">
+              {{ responseData.code }}
             </el-descriptions-item>
-            <el-descriptions-item label="路径">
-              <el-tag>{{ selectedApi.path }}</el-tag>
+            <el-descriptions-item label="执行时间">
+              {{ executionTime }}ms
             </el-descriptions-item>
-            <el-descriptions-item label="方法">
-              <el-tag :type="getMethodTagType(selectedApi.method)">
-                {{ selectedApi.method }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="当前版本">
-              <el-tag type="success">v{{ currentVersion.version }}</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="所属应用">
-              <el-tag>{{ selectedApi.belongApp }}</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="应用上下文路径">
-              <el-tag>{{ selectedApi.contextPath }}</el-tag>
+            <el-descriptions-item label="消息">
+              {{ responseData.message }}
             </el-descriptions-item>
           </el-descriptions>
         </div>
 
-        <!-- SQL模板预览 -->
-        <div class="sql-preview" v-if="selectedApi && currentVersion">
+        <div class="response-data">
+          <h4>响应数据：</h4>
           <div class="code-block">
-            <pre><code class="sql">{{ currentVersion.sqlTemplate }}</code></pre>
+            <pre><code class="json">{{ formatResponseData(responseData) }}</code></pre>
           </div>
         </div>
-
-        <!-- 请求配置 -->
-        <div class="request-config" v-if="selectedApi && currentVersion">
-          <el-card class="config-card" shadow="never">
-            <template #header>
-              <div class="card-header">
-                <span>请求参数</span>
-              </div>
-            </template>
-
-            <!-- 参数配置 -->
-            <div class="params-section">
-              <div class="params-list">
-                <div
-                    v-for="(param, index) in requestParams"
-                    :key="index"
-                    class="param-item"
-                    :class="{ 'param-error': param.error }"
-                >
-                  <el-input
-                      v-model="param.name"
-                      placeholder="参数名"
-                      style="width: 150px"
-                      readonly
-                  />
-                  <el-select
-                      v-model="param.type"
-                      placeholder="类型"
-                      style="width: 250px"
-                      disabled
-                  >
-                    <template v-for="(type, index) in paramInfoList" :key="index">
-                      <el-option :label="type.label" :value="type.value"></el-option>
-                    </template>
-                  </el-select>
-                  <el-input
-                      v-if="!param.type.startsWith('Array')"
-                      v-model="param.value"
-                      placeholder="参数值"
-                      @input="validateParam(param)"
-                      :class="{ 'invalid-param': param.error }"
-                  />
-                  <div v-else class="array-params">
-                    <el-button icon="plus" type="primary" @click="param.value.push('')"></el-button>
-                    <template v-for="(item, index) in param.value" :key="index">
-                      <el-input
-                          v-model="param.value[index]"
-                          :placeholder="'参数['+index+']值'"
-                          style="width: 200px;"
-                          @input="validateParam(param)"
-                          :class="{ 'invalid-param': param.error }"
-                      >
-                        <template #append>
-                          <el-button slot="append" icon="Delete" size="small"
-                                     @click="param.value.splice(index, 1)"></el-button>
-                        </template>
-                      </el-input>
-                    </template>
-                    <el-button v-if="param.value.length > 0" icon="DeleteFilled" type="danger" size="small" @click="param.value.length = 0">清空
-                    </el-button>
-                  </div>
-                  <div class="param-info">
-                    <el-tooltip
-                        :content="getRuleDisplayText(param.rules)"
-                        placement="top"
-                    >
-                      <el-icon :color="param.rules.required ? '#f56c6c' : '#909399'">
-                        <InfoFilled/>
-                      </el-icon>
-                    </el-tooltip>
-                  </div>
-                  <div class="param-status">
-                    <el-icon v-if="param.error" color="#f56c6c">
-                      <CircleClose/>
-                    </el-icon>
-                    <el-icon v-else-if="param.value || !param.required" color="#67c23a">
-                      <Success/>
-                    </el-icon>
-                  </div>
-                </div>
-              </div>
-              <div class="validation-info" v-if="hasValidationErrors">
-                <el-alert
-                    title="参数验证失败，请检查标红的参数"
-                    type="error"
-                    show-icon
-                    :closable="false"
-                />
-              </div>
-            </div>
-
-            <!-- 执行按钮 -->
-            <div class="execute-section">
-              <el-button
-                  type="primary"
-                  @click="executeApi"
-                  :loading="executing"
-                  :disabled="!selectedApi"
-                  size="large"
-              >
-                <el-icon>
-                  <Promotion/>
-                </el-icon>
-                执行API
-              </el-button>
-            </div>
-          </el-card>
-        </div>
-
-        <!-- 响应结果 -->
-        <div class="response-result" v-if="responseData">
-          <el-card class="response-card" shadow="never">
-            <template #header>
-              <div class="card-header">
-                <span>响应结果</span>
-                <el-tag :type="responseData.code === 0 ? 'success' : 'danger'">
-                  {{ responseData.code === 0 ? '成功' : '失败' }}
-                </el-tag>
-              </div>
-            </template>
-
-            <div class="response-info">
-              <el-descriptions :column="3" border size="small">
-                <el-descriptions-item label="状态码">
-                  {{ responseData.code }}
-                </el-descriptions-item>
-                <el-descriptions-item label="执行时间">
-                  {{ executionTime }}ms
-                </el-descriptions-item>
-                <el-descriptions-item label="消息">
-                  {{ responseData.message }}
-                </el-descriptions-item>
-              </el-descriptions>
-            </div>
-
-            <div class="response-data">
-              <h4>响应数据：</h4>
-              <div class="code-block">
-                <pre><code class="json">{{ formatResponseData(responseData) }}</code></pre>
-              </div>
-            </div>
-          </el-card>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-if="!selectedApiId" class="no-api-selected">
-          <el-empty description="请选择API" :image-size="200"/>
-        </div>
       </el-card>
+    </div>
+
+    <!-- 空状态 -->
+    <div v-if="!apiInfo" class="no-api-selected">
+      <el-empty description="API信息加载中..." :image-size="200"/>
     </div>
   </div>
 </template>
 
 <script setup>
-import {onMounted, ref, computed} from 'vue'
+import {ref, computed, watch} from 'vue'
 import {ElMessage, ElNotification} from 'element-plus'
 import {gatewayApi} from '@/api/api-service/gatewayApi.ts'
-import * as apiVersionApi from '@/api/api-service/apiVersionApi.ts'
-import * as apiDefinitionApi from '@/api/api-service/apiDefinitionApi.ts'
 import {apiParamTypeList} from "@/utils/enums/ApiContants.ts";
 
-// 响应式数据
-const apiLoading = ref(false)
-const executing = ref(false)
+// 定义props
+const props = defineProps({
+  apiInfo: {
+    type: Object,
+    default: () => null
+  },
+  versionInfo: {
+    type: Object,
+    default: () => null
+  },
+  paramDefinition: {
+    type: String,
+    default: ''
+  }
+})
 
-const selectedApiId = ref(null)
-const selectedApi = ref(null)
-const apiList = ref([])
-const currentVersion = ref(null)
+// 响应式数据
+const executing = ref(false)
 const responseData = ref(null)
 const executionTime = ref(0)
 
@@ -244,53 +221,19 @@ const paramInfoList = ref([...apiParamTypeList])
 const hasValidationErrors = computed(() => {
   return requestParams.value.some(param => param.error)
 })
-
-// 生命周期
-onMounted(() => {
-  loadApis()
-})
-
+const addParam = () => {
+  requestParams.value.push({
+    name: '',
+    value: '',
+    type: 'String',
+    required: false,
+    rules: {},
+    error: false,
+    errorMessage: '',
+    readOnly: false,
+  })
+}
 // 方法
-const loadApis = async () => {
-  try {
-    apiLoading.value = true
-    const response = await apiDefinitionApi.list()
-    apiList.value = response || []
-  } catch (error) {
-    ElMessage.error('加载API列表失败')
-    console.error('加载API列表失败:', error)
-  } finally {
-    apiLoading.value = false
-  }
-}
-
-const loadApiDetail = async () => {
-  if (!selectedApiId.value) return
-
-  try {
-    // 加载API详情
-    selectedApi.value = (await apiDefinitionApi.getById(selectedApiId.value)).data;
-
-    // 加载当前版本
-    const versionResponse = await apiVersionApi.getPublishedVersion(selectedApiId.value)
-    if (versionResponse.data) {
-      currentVersion.value = versionResponse.data
-      // 解析参数定义并初始化请求参数
-      initRequestParams(versionResponse.data.paramDefinition)
-    } else {
-      currentVersion.value = null
-      ElMessage.warning('该API没有已发布的版本')
-    }
-
-    // 重置响应数据
-    responseData.value = null
-
-  } catch (error) {
-    ElMessage.error('加载API详情失败')
-    console.error('加载API详情失败:', error)
-  }
-}
-
 const initRequestParams = (paramDefinition) => {
   if (!paramDefinition) {
     requestParams.value = []
@@ -309,7 +252,8 @@ const initRequestParams = (paramDefinition) => {
           required: param.required || false,
           rules: param.rules || {},
           error: false,
-          errorMessage: ''
+          errorMessage: '',
+          readOnly: true
         }
       })
     } else if (typeof params === 'object') {
@@ -322,7 +266,8 @@ const initRequestParams = (paramDefinition) => {
           required: params[key].required || false,
           rules: params[key].rules || {},
           error: false,
-          errorMessage: ''
+          errorMessage: '',
+          readOnly: true
         }
       })
     }
@@ -474,8 +419,8 @@ const getRuleDisplayText = (rulesObj) => {
 }
 
 const executeApi = async () => {
-  if (!selectedApi.value) {
-    ElMessage.warning('请先选择API')
+  if (!props.apiInfo) {
+    ElMessage.warning('API信息不存在')
     return
   }
 
@@ -523,9 +468,9 @@ const executeApi = async () => {
 
     // 执行API
     const response = await gatewayApi.execute(
-        selectedApi.value.path,
-        selectedApi.value.method,
-        selectedApi.value.contextPath,
+        props.apiInfo.path,
+        props.apiInfo.method,
+        props.apiInfo.contextPath,
         params
     )
 
@@ -585,11 +530,24 @@ const getMethodTagType = (method) => {
   }
   return types[method] || 'info'
 }
+
+// 监听参数定义变化
+watch(() => props.paramDefinition, (newVal) => {
+  initRequestParams(newVal)
+}, {immediate: true})
+
+// 监听版本信息变化
+watch(() => props.versionInfo, (newVal) => {
+  if (newVal && newVal.paramDefinition) {
+    initRequestParams(newVal.paramDefinition)
+  }
+}, {immediate: true})
+
 </script>
 
 <style scoped>
 /* 主要内容区域 */
-.main-content {
+.debug-component {
   margin: 0 auto;
 }
 
@@ -602,38 +560,6 @@ const getMethodTagType = (method) => {
   border: 1px solid #e9ecef;
   border-radius: 6px;
   overflow: hidden;
-}
-
-/* API选择卡片 */
-.api-selector-card {
-  margin-bottom: 24px;
-  border-radius: 12px;
-  border: 1px solid #e4e7ed;
-}
-
-.api-selector-card .card-header {
-  font-weight: 600;
-  color: #303133;
-}
-
-.api-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.api-name {
-  font-weight: 500;
-  color: #303133;
-}
-
-.api-path {
-  font-size: 12px;
-  color: #909399;
-  background: #f5f7fa;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 /* 卡片样式 */
