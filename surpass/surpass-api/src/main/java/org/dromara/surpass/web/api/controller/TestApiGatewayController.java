@@ -3,7 +3,6 @@ package org.dromara.surpass.web.api.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.dromara.surpass.entity.ApiRequestUri;
 import org.dromara.surpass.persistence.service.ApiExecuteService;
 import org.dromara.surpass.web.ResponseTemplateRenderer;
@@ -20,9 +19,9 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/test/api")
 @RequiredArgsConstructor
-public class ApiGatewayController {
+public class TestApiGatewayController {
 
     private final ApiExecuteService apiExecuteService;
 
@@ -31,73 +30,44 @@ public class ApiGatewayController {
     /**
      * 通用GET请求
      */
-    @GetMapping("/**")
+    @RequestMapping("/**")
     public ResponseEntity<Object> getHandle(
-                    HttpServletRequest request,
-                    @RequestParam(required = false) Map<String, Object> paramMap) {
-        return handleRequest(RequestMethod.GET, request,combineParam(null,paramMap));
+            HttpServletRequest request,
+            @RequestBody(required = false) Map<String, Object> bodyMap,
+            @RequestParam(required = false) Map<String, Object> paramMap) {
+        return handleRequest(RequestMethod.resolve(request.getMethod()), request, combineParam(bodyMap, paramMap));
     }
 
-    /**
-     * 通用POST请求
-     */
-    @PostMapping("/**")
-    public ResponseEntity<Object> postHandle(
-                    HttpServletRequest request,
-                    @RequestBody(required = false) Map<String, Object> bodyMap,
-                    @RequestParam(required = false) Map<String, Object> paramMap) {
-        return handleRequest(RequestMethod.POST, request,combineParam(bodyMap,paramMap));
-    }
-
-    /**
-     * 通用PUT请求
-     */
-    @PutMapping("/**")
-    public ResponseEntity<Object> putHandle(
-                    HttpServletRequest request,
-                    @RequestBody(required = false) Map<String, Object> bodyMap,
-                    @RequestParam(required = false) Map<String, Object> paramMap) {
-        return handleRequest(RequestMethod.PUT, request,combineParam(bodyMap,paramMap));
-    }
-
-    /**
-     * 通用DELETE请求
-     */
-    @DeleteMapping("/**")
-    public ResponseEntity<Object> deleteHandle(
-                    HttpServletRequest request,
-                    @RequestParam(required = false) Map<String, Object> paramMap) {
-        return handleRequest(RequestMethod.DELETE, request,combineParam(null,paramMap));
-    }
-    
     /**
      * 请求参数合并
+     *
      * @param bodyMap
      * @param paramMap
      * @return
      */
-    Map<String, Object> combineParam(Map<String, Object> bodyMap,Map<String, Object> paramMap){
+    Map<String, Object> combineParam(Map<String, Object> bodyMap, Map<String, Object> paramMap) {
         Map<String, Object> combinedParamMap = new HashMap<>();
-        if(paramMap != null) {
+        if (paramMap != null) {
             combinedParamMap.putAll(paramMap);
         }
-        if(bodyMap != null) {
+        if (bodyMap != null) {
             combinedParamMap.putAll(bodyMap);
         }
         return combinedParamMap;
     }
-    
+
     /**
      * 请求处理
+     *
      * @param method
      * @param request
      * @param paramMap
      * @return
      */
     private ResponseEntity<Object> handleRequest(
-                    RequestMethod method, 
-                    HttpServletRequest request,
-                    Map<String, Object> paramMap) {
+            RequestMethod method,
+            HttpServletRequest request,
+            Map<String, Object> paramMap) {
         try {
             // 1.获取URL上下文
             ApiRequestUri apiRequestUri = WebContext.explainRequestUri(request);
@@ -105,8 +75,8 @@ public class ApiGatewayController {
             Object result = apiExecuteService.execute(apiRequestUri, method.name(), paramMap, true);
             // 3. 渲染响应
             Object response = responseRenderer.renderResponse(
-            		responseRenderer.getDefaultResponseTemplate(), result);
-            
+                    responseRenderer.getDefaultResponseTemplate(), result);
+
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);

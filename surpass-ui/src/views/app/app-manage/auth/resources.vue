@@ -246,7 +246,7 @@
                   :props="defaultProps"
                   check-strictly
                   value-key="id"
-                  :placeholder="t('org.placeholder.parent')"
+                  placeholder="请选择"
               />
             </el-form-item>
 
@@ -379,6 +379,27 @@
                   inactive-value="n"
               />
             </el-form-item>
+
+            <!--      API代理专属      -->
+            <el-form-item
+                v-if="formData.classify === 'proxy'"
+                label="代理地址"
+            >
+              <el-input v-model="formData.proxyUrl" placeholder="请输入完整的URL"/>
+            </el-form-item>
+            <el-form-item
+                v-if="formData.classify === 'proxy'"
+                label="认证类型"
+            >
+              <el-select v-model="formData.proxyAuthType" placeholder="请选择认证类型" clearable style="width: 100%">
+                <el-option
+                    v-for="dict in proxy_auth_type"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                />
+              </el-select>
+            </el-form-item>
           </el-col>
 
           <!-- 描述放在最下方，跨两列 -->
@@ -420,7 +441,7 @@ import * as proxy from "@/utils/Dict";
 import IconSelect from "@/components/IconSelect/index.vue";
 import DictTag from "@/components/DictTag/index.vue";
 
-const {resources_type, action_type, method_type} = proxy.useDict("resources_type", "action_type", "method_type");
+const {resources_type, action_type, method_type, proxy_auth_type} = proxy.useDict("resources_type", "action_type", "method_type", "proxy_auth_type");
 const router = useRouter()
 
 const props = defineProps({

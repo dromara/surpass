@@ -10,6 +10,15 @@ export const gatewayApi = {
             data: method !== 'GET' ? params : {}
         }
         return request(config)
+    },
+    // 执行API测试
+    executeTest: (path : any, method = 'GET', contextPath = '/', params = {}) => {
+        const config = {
+            method: "post",
+            url: `/test/api${contextPath}${path}`,
+            data: params || {}
+        }
+        return request(config)
     }
 }
 

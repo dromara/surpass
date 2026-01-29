@@ -54,21 +54,6 @@ public class ResponseTemplateRenderer {
         }
     }
 
-    public boolean validateResponseTemplate(String responseTemplate) {
-        if (responseTemplate == null || responseTemplate.trim().isEmpty()) {
-            return true;
-        }
-
-        try {
-            // 尝试解析模板
-            String testTemplate = responseTemplate.replace("#{data}", "{}");
-            objectMapper.readTree(testTemplate);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
     public String getDefaultResponseTemplate() {
         return "{\"code\":0,\"data\":#{data},\"message\":\"success\"}";
     }

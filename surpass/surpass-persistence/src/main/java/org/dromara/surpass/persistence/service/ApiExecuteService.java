@@ -9,6 +9,6 @@ import org.dromara.surpass.entity.ApiRequestUri;
  */
 public interface ApiExecuteService{
 
-    public Object execute(ApiRequestUri apiRequestUri, String method,  Map<String, Object> params);
+    public Object execute(ApiRequestUri apiRequestUri, String method, Map<String, Object> params, boolean isTest);
     
 }

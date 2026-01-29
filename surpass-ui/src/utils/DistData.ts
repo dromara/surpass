@@ -2482,6 +2482,24 @@ const distData: DistData = {
             label: 'OpenApi',
             value: 'openApi',
         },
+        {
+            label: 'API代理',
+            value: 'proxy',
+        },
+    ],
+    "proxy_auth_type": [
+        {
+            label: 'Base',
+            value: 'BASE',
+        },
+        {
+            label: 'JWT',
+            value: 'JWT',
+        },
+        {
+            label: 'OAuth2',
+            value: 'OAUTH2',
+        }
     ]
 }
 

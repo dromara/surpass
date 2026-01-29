@@ -467,11 +467,15 @@ const executeApi = async () => {
     startTime = Date.now()
 
     // 执行API
-    const response = await gatewayApi.execute(
+    console.log(props.versionInfo)
+    const response = await gatewayApi.executeTest(
         props.apiInfo.path,
         props.apiInfo.method,
         props.apiInfo.contextPath,
-        params
+        {
+          "apiVersion": JSON.stringify(props.versionInfo),
+          "data": params
+        }
     )
 
     // 计算执行时间

@@ -1,5 +1,6 @@
 package org.dromara.surpass.entity.api;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -89,11 +90,13 @@ public class ApiVersion extends JpaEntity implements Serializable {
     private String createdBy;
 
     @Column
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createdDate;
 
     @Column
     private String modifiedBy;
 
     @Column
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date modifiedDate;
 }

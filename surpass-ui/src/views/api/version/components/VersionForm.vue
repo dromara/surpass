@@ -477,15 +477,17 @@ const hasMatchingParentheses = (sql) => {
 }
 
 const containsDangerousSql = (sql) => {
-  // 检查是否包含危险的SQL关键字
-  const dangerousKeywords = ['DROP', 'TRUNCATE', 'ALTER', 'CREATE', 'DELETE FROM', 'UPDATE.*SET.*WHERE.*1=1', 'EXEC', 'EXECUTE']
-  for (const keyword of dangerousKeywords) {
-    const regex = new RegExp(keyword.replace(/[.*+?^${}()|\[\]\\]/g, '\\$&'), 'i');
-    if (regex.test(sql)) {
-      return true
-    }
-  }
-  return false
+  const dangerousPatterns = [
+    /drop\s+table/i,
+    /truncate\s+table/i,
+    /alter\s+table/i,
+    /create\s+table/i,
+    /delete\s+from/i,
+    /update\s+.+\s+set\s+.+\s+where\s+1\s*=\s*1/i,
+    /\bexec\b/i,
+    /\bexecute\b/i
+  ]
+  return dangerousPatterns.some(pattern => pattern.test(sql))
 }
 
 // 验证占位符参数名格式
