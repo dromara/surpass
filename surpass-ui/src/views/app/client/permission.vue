@@ -14,7 +14,55 @@
     <div class="content-wrapper">
       <el-card class="content-card">
         <div class="content-body">
-         sss
+          <el-card class="tree-card">
+            <div class="tree-container">
+              <el-tree
+                  node-key="id"
+                  :data="dataOptions"
+                  :props="defaultProps"
+                  :expand-on-click-node="false"
+                  :filter-node-method="filterNode"
+                  ref="tree"
+                  :default-expanded-keys="treeData"
+                  @node-click="handleNodeClick"
+                  highlight-current
+                  class="modern-tree"
+                  v-slot="{ node, data }"
+              >
+                <span class="tree-node">
+                  <!-- 资源图标 -->
+                  <svg-icon :icon-class="getResourceIcon(data.classify, data.resStyle)" class="resource-icon"/>
+
+                  <!-- 资源名称 -->
+                  <span class="tree-label">
+                    <el-tooltip
+                        :content="node.label"
+                        placement="top"
+                        :disabled="node.label.length <= 15"
+                    >
+                      <span>{{ node.label.length > 15 ? node.label.slice(0, 15) + '...' : node.label }}</span>
+                    </el-tooltip>
+                  </span>
+
+                  <!-- 资源类型标签 -->
+                  <el-tag
+                      size="small"
+                      :type="resourceTagType(data.classify)"
+                      class="tree-tag"
+                      effect="light"
+                  >
+                    {{ resourceLabel(data.classify) }}
+                  </el-tag>
+                </span>
+              </el-tree>
+
+              <!-- 空状态 -->
+              <div v-if="!dataOptions || dataOptions.length === 0" class="tree-empty">
+                <svg-icon icon-class="empty" class="empty-icon"/>
+                <p>暂无资源数据</p>
+              </div>
+            </div>
+          </el-card>
         </div>
       </el-card>
     </div>
@@ -35,7 +83,10 @@ const id: any = ref(undefined);
 const clientName: any = ref(undefined);
 const treeData = ref([]);//当前选中节点
 const dataOptions = ref([]);
-
+const defaultProps = ref({
+  children: "children",
+  label: "name"
+});
 
 const handleBack = () => {
   router.back()
@@ -46,7 +97,7 @@ function loadTree() {
     clientId: id.value,
   }
 
-  appResourcesApi.getTreeClient(params).then((res) => {
+  appResourcesApi.getTreeClient(params).then((res: any) => {
     // 清空，避免多次调用重复 push
     treeData.value = []
 
@@ -68,6 +119,52 @@ const collectExpandIds = (nodes: any, targetRef: any, maxLevel = 1) => {
 
   nodes.forEach((root: any) => traverse(root, 1))
 }
+
+/** 通过条件过滤节点  */
+const filterNode = (value: any, data: any) => {
+  if (!value) return true;
+  return data.label.indexOf(value) !== -1;
+};
+
+/** 节点单击事件 */
+function handleNodeClick(data: any) {
+
+}
+
+const iconMap: Record<string, string> = {
+  menu: 'menu',
+  button: 'button',
+  api: 'api',
+  openApi: 'api'
+}
+
+const getResourceIcon = (classify?: string, icon?: string): string => {
+  console.log('getResourceIcon', classify, icon)
+  return icon || (classify ? iconMap[classify] : undefined) || 'resource'
+}
+
+const tagTypeMap: Record<string, string> = {
+  menu: 'success',
+  button: 'info',
+  api: 'warning',
+  openApi: 'danger'
+}
+
+const resourceTagType = (classify?: string): string => {
+  return classify ? tagTypeMap[classify] ?? '' : ''
+}
+
+const labelMap: Record<string, string> = {
+  menu: '菜单',
+  button: '按钮',
+  api: 'API',
+  openApi: 'OpenAPI'
+}
+
+const resourceLabel = (classify?: string) => {
+  return classify ? labelMap[classify] ?? '未知' : '未知'
+}
+
 
 // 生命周期
 onMounted(() => {
@@ -284,5 +381,71 @@ onMounted(() => {
 
 .content-wrapper {
   animation-delay: 0.3s;
+}
+
+.tree-container {
+  min-height: 600px;
+  max-height: 100%;
+  overflow: auto;
+  padding-top: 20px;
+
+  :deep(.el-tree-node__content) {
+    padding: 20px 12px;
+  }
+
+  .modern-tree {
+    .tree-node {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 8px;
+
+      .resource-icon {
+        width: 16px;
+        height: 16px;
+        color: #909399;
+        flex-shrink: 0;
+        transition: all 0.3s;
+      }
+
+      .tree-label {
+        flex: 1;
+        font-size: 14px;
+        color: #606266;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tree-tag {
+        flex-shrink: 0;
+        font-size: 12px;
+        padding: 0 6px;
+        height: 20px;
+        line-height: 18px;
+      }
+    }
+  }
+
+  .tree-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #909399;
+
+    .empty-icon {
+      width: 60px;
+      height: 60px;
+      color: #dcdfe6;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
 }
 </style>
