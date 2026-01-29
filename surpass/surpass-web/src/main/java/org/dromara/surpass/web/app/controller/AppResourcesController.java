@@ -8,15 +8,13 @@ import org.dromara.mybatis.jpa.query.LambdaQuery;
 import org.dromara.surpass.entity.ClientPermission;
 import org.dromara.surpass.entity.Message;
 import org.dromara.surpass.entity.api.ApiDataSource;
+import org.dromara.surpass.entity.api.ApiVersion;
 import org.dromara.surpass.entity.app.App;
 import org.dromara.surpass.entity.app.AppResources;
 import org.dromara.surpass.entity.app.dto.AppResourcesChangeDto;
 import org.dromara.surpass.entity.app.dto.AppResourcesPageDto;
 import org.dromara.surpass.entity.app.dto.ClientAuthzDto;
-import org.dromara.surpass.persistence.service.ApiDataSourceService;
-import org.dromara.surpass.persistence.service.AppResourcesService;
-import org.dromara.surpass.persistence.service.AppService;
-import org.dromara.surpass.persistence.service.ClientPermissionService;
+import org.dromara.surpass.persistence.service.*;
 import org.dromara.surpass.validate.AddGroup;
 import org.dromara.surpass.validate.EditGroup;
 import org.springdoc.core.annotations.ParameterObject;
@@ -47,6 +45,8 @@ public class AppResourcesController {
 
     private final ApiDataSourceService apiDataSourceService;
 
+    private final ApiVersionService apiVersionService;
+
     @PostMapping("/add")
     public Message<String> addResources(@Validated(value = AddGroup.class) @RequestBody AppResourcesChangeDto dto) {
         return appResourcesService.create(dto);
@@ -62,31 +62,6 @@ public class AppResourcesController {
     public Message<String> updateResources(@Validated(value = EditGroup.class) @RequestBody AppResourcesChangeDto dto) {
 
         return appResourcesService.updateResources(dto);
-    }
-
-    @GetMapping("/get/{id}")
-    public Message<AppResources> get(@PathVariable String id) {
-
-        var resource = appResourcesService.get(id);
-        if (resource == null) {
-            return Message.ok(null);
-        }
-
-        // 所属应用
-        Optional.ofNullable(resource.getAppId())
-                .map(appService::get)
-                .ifPresent(app -> {
-                    resource.setContextPath(app.getContextPath());
-                    resource.setBelongApp(app.getAppName());
-                });
-
-        // 数据源
-        Optional.ofNullable(resource.getDatasourceId())
-                .filter(StringUtils::isNotBlank)
-                .map(apiDataSourceService::get)
-                .ifPresent(ds -> resource.setDatasourceName(ds.getName()));
-
-        return Message.ok(resource);
     }
 
     @DeleteMapping(value = {"/delete"})
@@ -120,5 +95,73 @@ public class AppResourcesController {
         wrapper.eq(AppResources::getClassify, "openApi");
         List<AppResources> apis = appResourcesService.query(wrapper);
         return ResponseEntity.ok(apis);
+    }
+
+    @GetMapping("/get/{id}")
+    public Message<AppResources> get(@PathVariable String id) {
+        AppResources resource = appResourcesService.get(id);
+        if (resource == null) {
+            return Message.ok(null);
+        }
+
+        enrichResourceWithRelatedData(resource);
+        return Message.ok(resource);
+    }
+
+    /**
+     * enriches the resource with related data from various services
+     */
+    private void enrichResourceWithRelatedData(AppResources resource) {
+        enrichAppInfo(resource);
+        enrichParentInfo(resource);
+        enrichOpenApiVersion(resource);
+        enrichDataSourceInfo(resource);
+    }
+
+    /**
+     * 填充所属应用信息
+     */
+    private void enrichAppInfo(AppResources resource) {
+        Optional.ofNullable(resource.getAppId())
+                .map(appService::get)
+                .ifPresent(app -> {
+                    resource.setContextPath(app.getContextPath());
+                    resource.setBelongApp(app.getAppName());
+                });
+    }
+
+    /**
+     * 填充父级资源信息
+     */
+    private void enrichParentInfo(AppResources resource) {
+        Optional.ofNullable(resource.getParentId())
+                .filter(StringUtils::isNotBlank)
+                .map(appResourcesService::get)
+                .ifPresent(parent -> resource.setParentName(parent.getName()));
+    }
+
+    /**
+     * 填充OpenApi版本定义信息
+     */
+    private void enrichOpenApiVersion(AppResources resource) {
+        if (!"openApi".equals(resource.getClassify())) {
+            return;
+        }
+
+        Optional.ofNullable(apiVersionService.findPublishedVersionByApiId(resource.getId()))
+                .ifPresent(version -> {
+                    resource.setParamDefinition(version.getParamDefinition());
+                    resource.setResponseDefinition(version.getResponseDefinition());
+                });
+    }
+
+    /**
+     * 填充数据源信息
+     */
+    private void enrichDataSourceInfo(AppResources resource) {
+        Optional.ofNullable(resource.getDatasourceId())
+                .filter(StringUtils::isNotBlank)
+                .map(apiDataSourceService::get)
+                .ifPresent(dataSource -> resource.setDatasourceName(dataSource.getName()));
     }
 }

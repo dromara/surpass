@@ -109,8 +109,11 @@
                   <el-descriptions-item label="应用上下文">
                     {{ selectedResource.contextPath || '-' }}
                   </el-descriptions-item>
-                  <el-descriptions-item label="资源路径">
+<!--                  <el-descriptions-item label="资源路径">
                     {{ selectedResource.path || '-' }}
+                  </el-descriptions-item>-->
+                  <el-descriptions-item label="父级资源">
+                    {{ selectedResource.parentName || '-' }}
                   </el-descriptions-item>
                   <el-descriptions-item label="描述" :span="2">
                     {{ selectedResource.description || '暂无描述' }}
@@ -153,7 +156,7 @@
                     <span>请求参数</span>
                   </div>
                   <el-table
-                      :data="selectedResource.requestParams || []"
+                      :data="parsedParamDefinition"
                       border
                       stripe
                       size="small"
@@ -161,20 +164,70 @@
                       :empty-text="'暂无请求参数'"
                   >
                     <el-table-column prop="name" label="参数名" width="150" />
-                    <el-table-column prop="type" label="类型" width="100">
+                    <el-table-column prop="type" label="类型" width="120">
                       <template #default="{ row }">
-                        <el-tag size="small" type="info">{{ row.type || 'String' }}</el-tag>
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="required" label="必填" width="80">
-                      <template #default="{ row }">
-                        <el-tag :type="row.required ? 'danger' : ''" size="small">
-                          {{ row.required ? '是' : '否' }}
+                        <el-tag size="small" :type="getTypeTagType(row.type)">
+                          {{ row.type || 'String' }}
                         </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="description" label="说明" show-overflow-tooltip />
-                    <el-table-column prop="defaultValue" label="默认值" width="120" />
+                    <el-table-column prop="required" label="必填" width="80" align="center">
+                      <template #default="{ row }">
+                        <el-tag :type="getRequired(row) ? 'danger' : ''" size="small">
+                          {{ getRequired(row) ? '是' : '否' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="description" label="说明" width="120" show-overflow-tooltip />
+                    <el-table-column label="校验规则" min-width="200">
+                      <template #default="{ row }">
+                        <div v-if="hasRules(row)" class="rules-container">
+                          <!-- 数值范围 -->
+                          <el-tag v-if="row.rules.minValue || row.rules.maxValue" size="small" type="warning">
+                            范围: {{ getRangeText(row.rules) }}
+                          </el-tag>
+
+                          <!-- 格式校验 -->
+                          <el-tag v-if="row.rules.format" size="small" type="success">
+                            格式: {{ row.rules.format }}
+                          </el-tag>
+
+                          <!-- 正则表达式 -->
+                          <el-tooltip v-if="row.rules.pattern" placement="top" :content="row.rules.pattern">
+                            <el-tag size="small" type="primary">
+                              正则校验
+                            </el-tag>
+                          </el-tooltip>
+
+                          <!-- 长度限制 -->
+                          <el-tag v-if="row.rules.minLength || row.rules.maxLength" size="small" type="info">
+                            长度: {{ getLengthText(row.rules) }}
+                          </el-tag>
+
+                          <!-- 最小值 -->
+                          <el-tag v-if="row.rules.min !== undefined" size="small">
+                            最小: {{ row.rules.min }}
+                          </el-tag>
+
+                          <!-- 最大值 -->
+                          <el-tag v-if="row.rules.max !== undefined" size="small">
+                            最大: {{ row.rules.max }}
+                          </el-tag>
+                        </div>
+                        <span v-else class="no-rules">无</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="默认值" width="100" align="center">
+                      <template #default="{ row }">
+                        <span>{{ row.defaultValue || row.rules?.defaultValue || '-' }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="只读" width="70" align="center">
+                      <template #default="{ row }">
+                        <el-tag v-if="row.readOnly" size="small" type="info">是</el-tag>
+                        <span v-else>-</span>
+                      </template>
+                    </el-table-column>
                   </el-table>
                 </div>
 
@@ -183,23 +236,50 @@
                   <div class="params-title">
                     <el-icon><Download /></el-icon>
                     <span>响应参数</span>
+                    <el-tag size="small" type="success" v-if="parsedResponseDefinition.length">
+                      {{ parsedResponseDefinition.length }} 个字段
+                    </el-tag>
                   </div>
                   <el-table
-                      :data="selectedResource.responseParams || []"
+                      :data="parsedResponseDefinition"
                       border
                       stripe
                       size="small"
                       style="margin-top: 12px;"
                       :empty-text="'暂无响应参数'"
                   >
-                    <el-table-column prop="name" label="参数名" width="150" />
-                    <el-table-column prop="type" label="类型" width="100">
+                    <el-table-column prop="name" label="参数名" width="180" />
+                    <el-table-column prop="type" label="类型" width="140">
                       <template #default="{ row }">
-                        <el-tag size="small" type="success">{{ row.type || 'String' }}</el-tag>
+                        <el-tag size="small" :type="getTypeTagType(row.type)">
+                          {{ row.type || 'String' }}
+                        </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="description" label="说明" show-overflow-tooltip />
-                    <el-table-column prop="example" label="示例" width="150" />
+                    <el-table-column prop="description" label="说明" min-width="150" show-overflow-tooltip>
+                      <template #default="{ row }">
+                        <span v-if="row.description">{{ row.description }}</span>
+                        <span v-else class="no-data">暂无说明</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="示例值" width="180">
+                      <template #default="{ row }">
+                        <el-tooltip
+                            v-if="row.example || row.defaultValue"
+                            :content="String(row.example || row.defaultValue)"
+                            placement="top"
+                        >
+                          <code class="example-code">{{ formatExample(row.example || row.defaultValue) }}</code>
+                        </el-tooltip>
+                        <span v-else class="no-data">-</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="只读" width="80" align="center">
+                      <template #default="{ row }">
+                        <el-tag v-if="row.readOnly" size="small" type="info">是</el-tag>
+                        <span v-else class="no-data">否</span>
+                      </template>
+                    </el-table-column>
                   </el-table>
                 </div>
 
@@ -338,6 +418,115 @@ const defaultProps = ref({
   children: "children",
   label: "name"
 });
+
+// 通用JSON解析函数
+const parseJsonString = (data) => {
+  try {
+    // 处理 null 或 undefined
+    if (data === null || data === undefined) {
+      return []
+    }
+    // 如果已经是数组，直接返回
+    if (Array.isArray(data)) {
+      return data
+    }
+    // 如果是字符串，尝试解析
+    if (typeof data === 'string') {
+      // 处理空字符串
+      if (data.trim() === '') {
+        return []
+      }
+      return JSON.parse(data)
+    }
+    return []
+  } catch (error) {
+    console.error('JSON解析失败:', error, data)
+    return []
+  }
+}
+
+// 解析请求参数
+const parsedParamDefinition = computed(() => {
+  const data = selectedResource.value?.paramDefinition
+      ?? selectedResource.value?.params
+      ?? []
+  return parseJsonString(data)
+})
+
+// 解析响应参数
+const parsedResponseDefinition = computed(() => {
+  const data = selectedResource.value?.responseDefinition
+      ?? selectedResource.value?.params
+      ?? []
+  return parseJsonString(data)
+})
+
+// 获取必填状态
+const getRequired = (row: any) => {
+  if (row.rules && typeof row.rules.required !== 'undefined') {
+    return row.rules.required
+  }
+  if (typeof row.required !== 'undefined') {
+    return row.required
+  }
+  return false
+}
+
+// 判断是否有校验规则
+const hasRules = (row: any) => {
+  if (!row.rules) return false
+  const ruleKeys = Object.keys(row.rules).filter(key => key !== 'required')
+  return ruleKeys.length > 0
+}
+
+// 获取数值范围文本
+const getRangeText = (rules: any) => {
+  const min = rules.minValue ?? rules.min
+  const max = rules.maxValue ?? rules.max
+
+  if (min !== undefined && max !== undefined) {
+    return `${min} ~ ${max}`
+  } else if (min !== undefined) {
+    return `≥ ${min}`
+  } else if (max !== undefined) {
+    return `≤ ${max}`
+  }
+  return ''
+}
+
+// 获取类型标签颜色
+const getTypeTagType = (type: any) => {
+  if (!type) return 'success'
+  const t = type.toLowerCase()
+  if (t.includes('string')) return 'success'
+  if (t.includes('int') || t.includes('number')) return 'warning'
+  if (t.includes('bool')) return 'danger'
+  if (t.includes('array') || t.includes('[]')) return 'primary'
+  if (t.includes('object')) return 'info'
+  return 'success'
+}
+
+// 获取长度限制文本
+const getLengthText = (rules: any) => {
+  const min = rules.minLength
+  const max = rules.maxLength
+
+  if (min !== undefined && max !== undefined) {
+    return `${min} ~ ${max}`
+  } else if (min !== undefined) {
+    return `≥ ${min}`
+  } else if (max !== undefined) {
+    return `≤ ${max}`
+  }
+  return ''
+}
+
+// 格式化示例值
+const formatExample = (value: any) => {
+  if (!value) return '-'
+  const str = String(value)
+  return str.length > 30 ? str.substring(0, 30) + '...' : str
+}
 
 // 判断是否为API资源
 const isApiResource = computed(() => {
@@ -760,5 +949,25 @@ onMounted(() => {
 
 .list-card {
   animation-delay: 0.3s;
+}
+
+.rules-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.no-rules {
+  color: #909399;
+  font-size: 12px;
+}
+
+:deep(.el-table) {
+  font-size: 13px;
+}
+
+:deep(.el-table td) {
+  padding: 8px 0;
 }
 </style>

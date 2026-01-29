@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dromara.mybatis.jpa.annotations.SoftDelete;
 import org.dromara.mybatis.jpa.entity.JpaEntity;
+import org.dromara.surpass.entity.api.ApiVersion;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -123,4 +124,8 @@ public class AppResources extends JpaEntity implements Serializable {
     private String belongApp;
 
     private String datasourceName;
+
+    private String paramDefinition;
+
+    private String responseDefinition;
 }
