@@ -35,7 +35,7 @@
           <el-tabs v-model="activeTab" class="form-tabs">
             <el-tab-pane label="基础配置" name="basic">
               <div class="tab-content">
-                <el-form-item label="描述" prop="description">
+                <el-form-item label="功能描述" prop="description">
                   <el-input
                       :model-value="formData.description"
                       type="textarea"
