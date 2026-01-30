@@ -33,8 +33,6 @@ import java.util.Map;
 public class DataSourceAutoConfiguration {
     private static final Logger _logger = LoggerFactory.getLogger(DataSourceAutoConfiguration.class);
 
-    public static final String DS_DEFUALT = "default";
-
     @Bean
     @ConfigurationProperties("spring.datasource")
     DruidDataSource druidDataSource() {
@@ -48,7 +46,7 @@ public class DataSourceAutoConfiguration {
         // 创建多个测试数据源
         Map<Object, Object> targetDataSources = new HashMap<>();
         // 默认数据源
-        targetDataSources.put(DS_DEFUALT, druidDataSource);
+        targetDataSources.put(DynamicRoutingDataSource.DEFAULT_DATASOURCE_KEY, druidDataSource);
 
         dynamicDataSource.setTargetDataSources(targetDataSources);
         dynamicDataSource.setDefaultTargetDataSource(druidDataSource);
