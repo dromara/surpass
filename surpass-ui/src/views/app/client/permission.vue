@@ -420,7 +420,7 @@ const defaultProps = ref({
 });
 
 // 通用JSON解析函数
-const parseJsonString = (data) => {
+const parseJsonString = (data: any) => {
   try {
     // 处理 null 或 undefined
     if (data === null || data === undefined) {
