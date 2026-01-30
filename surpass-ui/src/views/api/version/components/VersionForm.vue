@@ -35,6 +35,15 @@
           <el-tabs v-model="activeTab" class="form-tabs">
             <el-tab-pane label="基础配置" name="basic">
               <div class="tab-content">
+                <el-form-item label="描述" prop="description">
+                  <el-input
+                      :model-value="formData.description"
+                      type="textarea"
+                      :rows="2"
+                      placeholder="请输入版本描述"
+                      @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
+                  />
+                </el-form-item>
                 <el-form-item label="版本号" prop="version">
                   <el-input-number
                       :model-value="formData.version"
@@ -44,7 +53,7 @@
                       @update:model-value="$emit('update:formData', { ...props.formData, version: $event })"
                   />
                 </el-form-item>
-                <el-form-item label="操作类型" prop="supportsPaging">
+                <el-form-item label="动作" prop="supportsPaging">
                   <el-radio-group
                       :model-value="formData.supportsPaging"
                       @update:model-value="$emit('update:formData', { ...props.formData, supportsPaging: $event })"
@@ -83,21 +92,6 @@
                   />
                   <div class="form-item-tip">限制每页最大记录数</div>
                 </el-form-item>
-
-                <el-form-item label="描述" prop="description">
-                  <el-input
-                      :model-value="formData.description"
-                      type="textarea"
-                      :rows="2"
-                      placeholder="请输入版本描述"
-                      @update:model-value="$emit('update:formData', { ...props.formData, description: $event })"
-                  />
-                </el-form-item>
-              </div>
-            </el-tab-pane>
-
-            <el-tab-pane label="请求参数" name="request">
-              <div class="tab-content">
                 <el-form-item label="SQL模板" prop="sqlTemplate">
                   <el-button type="warning" @click="formatSql">格式化</el-button>
 

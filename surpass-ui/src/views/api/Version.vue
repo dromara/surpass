@@ -312,7 +312,6 @@ const handleSubmit = async () => {
       ElMessage.success('创建成功')
     }
 
-    drawerVisible.value = false
     loadVersions()
   } catch (error) {
     ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
