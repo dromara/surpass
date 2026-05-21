@@ -30,7 +30,7 @@
     "element-plus": "2.11.3",
     "file-saver": "^2.0.5",
     "fuse.js": "6.6.2",
-    "js-cookie": "3.0.5",
+    "js-cookie": "3.0.7",
     "jsencrypt": "3.3.2",
     "lucide-vue-next": "^0.475.0",
     "node-sql-parser": "^5.3.13",
